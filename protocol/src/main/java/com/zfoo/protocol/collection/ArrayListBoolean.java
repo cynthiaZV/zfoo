@@ -16,7 +16,6 @@ import java.util.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ArrayListBoolean implements List<Boolean> {
 
@@ -273,6 +272,19 @@ public class ArrayListBoolean implements List<Boolean> {
     @Override
     public List<Boolean> subList(int fromIndex, int toIndex) {
         return ArrayUtils.toList(array).subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof List<?> l)) {
+            return false;
+        }
+        return l.equals(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

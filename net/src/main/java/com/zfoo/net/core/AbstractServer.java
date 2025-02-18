@@ -14,8 +14,7 @@
 package com.zfoo.net.core;
 
 import com.zfoo.protocol.util.IOUtils;
-import com.zfoo.util.ThreadUtils;
-import com.zfoo.util.net.HostAndPort;
+import com.zfoo.protocol.util.ThreadUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -32,7 +31,6 @@ import java.util.List;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class AbstractServer<C extends Channel> extends ChannelInitializer<C> implements IServer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);

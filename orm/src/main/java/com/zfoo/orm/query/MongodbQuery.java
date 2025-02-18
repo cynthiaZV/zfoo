@@ -13,17 +13,16 @@
 
 package com.zfoo.orm.query;
 
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.model.IEntity;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class MongodbQuery implements IQuery {
 
     @Override
-    public <E extends IEntity<?>> IQueryBuilder<E> builder(Class<E> entityClazz) {
-        return new MongoQueryBuilder<E>(entityClazz);
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> IQueryBuilder<PK, E> builder(Class<E> entityClazz) {
+        return new MongoQueryBuilder<PK, E>(entityClazz);
     }
 
 }

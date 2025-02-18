@@ -26,10 +26,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class LuaMapSerializer implements ILuaSerializer {
 
+    @Override
+    public String fieldDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        return "{}";
+    }
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
         GenerateProtocolFile.addTab(builder, deep);
@@ -48,14 +51,14 @@ public class LuaMapSerializer implements ILuaSerializer {
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("buffer:writeInt(table.mapSize({}))", objectStr)).append(LS);
 
-        String key = "key" + GenerateProtocolFile.index.getAndIncrement();
-        String value = "value" + GenerateProtocolFile.index.getAndIncrement();
+        String key = "key" + GenerateProtocolFile.localVariableId++;
+        String value = "value" + GenerateProtocolFile.localVariableId++;
 
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("for {}, {} in pairs({}) do", key, value, objectStr)).append(LS);
-        GenerateLuaUtils.luaSerializer(mapField.getMapKeyRegistration().serializer())
+        CodeGenerateLua.luaSerializer(mapField.getMapKeyRegistration().serializer())
                 .writeObject(builder, key, deep + 2, field, mapField.getMapKeyRegistration());
-        GenerateLuaUtils.luaSerializer(mapField.getMapValueRegistration().serializer())
+        CodeGenerateLua.luaSerializer(mapField.getMapValueRegistration().serializer())
                 .writeObject(builder, value, deep + 2, field, mapField.getMapValueRegistration());
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append("end").append(LS);
@@ -72,25 +75,25 @@ public class LuaMapSerializer implements ILuaSerializer {
         }
 
         MapField mapField = (MapField) fieldRegistration;
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("local {} = {}", result)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
-        String size = "size" + GenerateProtocolFile.index.getAndIncrement();
+        String size = "size" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("local {} = buffer:readInt()", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("if {} > 0 then", size)).append(LS);
 
-        String i = "index" + GenerateProtocolFile.index.getAndIncrement();
+        String i = "index" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("for {} = 1, {} do", i, size, i)).append(LS);
 
-        String keyObject = GenerateLuaUtils.luaSerializer(mapField.getMapKeyRegistration().serializer())
+        String keyObject = CodeGenerateLua.luaSerializer(mapField.getMapKeyRegistration().serializer())
                 .readObject(builder, deep + 2, field, mapField.getMapKeyRegistration());
 
 
-        String valueObject = GenerateLuaUtils.luaSerializer(mapField.getMapValueRegistration().serializer())
+        String valueObject = CodeGenerateLua.luaSerializer(mapField.getMapValueRegistration().serializer())
                 .readObject(builder, deep + 2, field, mapField.getMapValueRegistration());
         GenerateProtocolFile.addTab(builder, deep + 2);
 

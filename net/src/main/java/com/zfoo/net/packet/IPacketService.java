@@ -12,14 +12,11 @@
 
 package com.zfoo.net.packet;
 
-import com.zfoo.net.router.attachment.IAttachment;
-import com.zfoo.protocol.IPacket;
 import io.netty.buffer.ByteBuf;
 import org.springframework.lang.Nullable;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public interface IPacketService {
 
@@ -27,6 +24,6 @@ public interface IPacketService {
 
     DecodedPacketInfo read(ByteBuf buffer);
 
-    void write(ByteBuf buffer, IPacket packet, @Nullable IAttachment attachment);
+    void write(ByteBuf buffer, Object packet, @Nullable Object attachment);
 
 }

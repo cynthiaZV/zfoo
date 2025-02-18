@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public interface IEnhanceSerializer {
 
@@ -31,7 +30,7 @@ public interface IEnhanceSerializer {
     }
 
     /**
-     * IProtocolRegistration.write(ByteBuf buffer, IPacket packet);
+     * IProtocolRegistration.write(ByteBuf buffer, Object packet);
      * $1=buffer
      * $2=packet
      */
@@ -42,5 +41,7 @@ public interface IEnhanceSerializer {
      * $1=buffer
      */
     String readObject(StringBuilder builder, Field field, IFieldRegistration fieldRegistration);
+
+    String defaultValue(StringBuilder builder, Field field, IFieldRegistration fieldRegistration);
 
 }

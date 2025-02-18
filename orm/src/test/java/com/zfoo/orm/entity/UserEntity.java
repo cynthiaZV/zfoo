@@ -13,15 +13,15 @@
 
 package com.zfoo.orm.entity;
 
-import com.zfoo.orm.model.anno.*;
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.anno.*;
+import com.zfoo.orm.model.IEntity;
 
 import java.util.List;
 
 
 /**
+ * @EntityCache(persister = @Persister("time30s"))
  * @author godotg
- * @version 3.0@EntityCache(persister = @Persister("time30s"))
  */
 @EntityCache
 public class UserEntity implements IEntity<Long> {
@@ -34,7 +34,7 @@ public class UserEntity implements IEntity<Long> {
     private short b;
 
     @Index(ascending = false, unique = true)
-    private int c;
+    private long c;
 
     private boolean d;
 
@@ -46,6 +46,9 @@ public class UserEntity implements IEntity<Long> {
 
     @Index(ascending = false, unique = false)
     private List<Integer> l;
+
+    @Version
+    private long version;
 
     public UserEntity() {
     }
@@ -89,11 +92,11 @@ public class UserEntity implements IEntity<Long> {
         this.b = b;
     }
 
-    public int getC() {
+    public long getC() {
         return c;
     }
 
-    public void setC(int c) {
+    public void setC(long c) {
         this.c = c;
     }
 
@@ -129,6 +132,14 @@ public class UserEntity implements IEntity<Long> {
         this.l = l;
     }
 
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
         return "UserEntity{" +
@@ -140,6 +151,7 @@ public class UserEntity implements IEntity<Long> {
                 ", e='" + e + '\'' +
                 ", f='" + f + '\'' +
                 ", l=" + l +
+                ", version=" + version +
                 '}';
     }
 }

@@ -29,7 +29,6 @@ import java.util.Set;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ProtocolTest {
 
@@ -64,7 +63,6 @@ public class ProtocolTest {
         cm.setB(Short.MIN_VALUE);
         cm.setC(Integer.MIN_VALUE);
         cm.setD(Long.MIN_VALUE);
-        cm.setE('e');
         cm.setF("Hello Jaysunxiao，this is the World!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
         ByteBuf writeBuff = Unpooled.directBuffer();

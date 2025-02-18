@@ -16,7 +16,7 @@ import com.zfoo.net.NetContext;
 import com.zfoo.net.packet.gateway.GatewayToProviderRequest;
 import com.zfoo.net.packet.gateway.GatewayToProviderResponse;
 import com.zfoo.net.router.attachment.GatewayAttachment;
-import com.zfoo.net.router.receiver.PacketReceiver;
+import com.zfoo.net.anno.PacketReceiver;
 import com.zfoo.net.session.Session;
 import com.zfoo.protocol.util.JsonUtils;
 import com.zfoo.protocol.util.StringUtils;
@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Component
 public class GatewayProviderController {
@@ -41,7 +40,7 @@ public class GatewayProviderController {
         logger.info("provider receive [packet:{}] from client", JsonUtils.object2String(request));
 
         var response = new GatewayToProviderResponse();
-        response.setMessage(StringUtils.format("Hello, this is the [provider:{}] response!", NetContext.getConfigManager().getLocalConfig().toLocalRegisterVO().toString()));
+        response.setMessage(StringUtils.format("Hello, this is the [provider:{}] response!", NetContext.getConfigManager().getLocalConfig().toLocalRegister().toString()));
 
         NetContext.getRouter().send(session, response, gatewayAttachment);
     }

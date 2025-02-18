@@ -14,11 +14,16 @@
 package com.zfoo.orm.util;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.Updates;
 import com.zfoo.orm.OrmContext;
 import com.zfoo.protocol.collection.CollectionUtils;
 import com.zfoo.protocol.util.AssertionUtils;
 import com.zfoo.protocol.util.StringUtils;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -26,9 +31,10 @@ import java.util.function.Consumer;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class MongoIdUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoIdUtils.class);
 
     private static final long INIT_ID = 1L;
 
@@ -51,16 +57,29 @@ public abstract class MongoIdUtils {
     public static long getIncrementIdFromMongo(String collectionName, String documentName) {
         var collection = OrmContext.getOrmManager().getCollection(collectionName);
 
-        var document = collection.findOneAndUpdate(Filters.eq("_id", documentName)
-                , new Document("$inc", new Document(COUNT, 1L)));
-
-        if (document == null) {
-            var result = collection.insertOne(new Document("_id", documentName).append(COUNT, INIT_ID));
-            AssertionUtils.notNull(result.getInsertedId());
-            return INIT_ID;
+        try {
+            var document = collection.findOneAndUpdate(Filters.eq("_id", documentName), new Document("$inc", new Document(COUNT, 1L)));
+            if (document != null) {
+                return document.getLong("count") + 1;
+            }
+        } catch (Throwable t) {
+            logger.error("getIncrementIdFromMongo collection:[{}] document:[{}] default error", collectionName, documentName, t);
         }
 
-        return document.getLong("count") + 1;
+        var query = Filters.eq("_id", documentName);
+        var inc = new Document("$inc", new Document(COUNT, 1L));
+        var setOnInsert = new Document("$setOnInsert", new Document("_id", documentName));
+        // 报错后重试创建并获取id，在大并发create的时候mongodb总是会报错一次“duplicate key error!” 所以重试一次
+        for (var i = 0; i < 3; i++) {
+            try {
+                var document = collection.findOneAndUpdate(query, Updates.combine(inc, setOnInsert), new FindOneAndUpdateOptions().upsert(true));
+                return null == document ? INIT_ID : document.getLong(COUNT) + 1;
+            } catch (Throwable t) {
+                logger.error("getIncrementIdFromMongo collection:[{}] document:[{}] retry error! ", collectionName, documentName, t);
+            }
+        }
+
+        throw new RuntimeException("getIncrementIdFromMongo error!");
     }
 
     public static long getIncrementIdFromMongoDefault(String documentName) {

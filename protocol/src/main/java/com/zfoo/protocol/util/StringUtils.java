@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
  * Operations on {@link String} that are null safe and thread safe.
  *
  * @author godotg
- * @version 3.0
  */
 public abstract class StringUtils {
 
@@ -78,6 +77,7 @@ public abstract class StringUtils {
     public static final String DOLLAR = "$";    // 美元符号
 
     public static final String EMPTY_JSON = "{}";
+
 
     public static final String MULTIPLE_HYPHENS = "-----------------------------------------------------------------------";
 
@@ -481,6 +481,5 @@ public abstract class StringUtils {
     public static boolean isStopChar(char ch) {
         return Character.isWhitespace(ch) || STOP_WORD.contains(ch);
     }
-
 
 }

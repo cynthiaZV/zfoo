@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "cppProtocol/ByteBuffer.h"
+#include "zfoocpp/ByteBuffer.h"
 
 namespace byte_buffer_test {
 
@@ -113,8 +113,8 @@ namespace byte_buffer_test {
 
         ByteBuffer buffer;
         assert(buffer.getCapacity() == DEFAULT_BUFFER_SIZE);
-        assert(buffer.writerIndex() == 0);
-        assert(buffer.readerIndex() == 0);
+        assert(buffer.getWriteOffset() == 0);
+        assert(buffer.getReadOffset() == 0);
 
         boolTest(buffer);
         byteTest(buffer);

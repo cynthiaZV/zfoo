@@ -17,11 +17,10 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class NamespaceHandler extends NamespaceHandlerSupport {
 
-    private final String ORM = "config";
+    public static final String ORM = "orm";
 
     @Override
     public void init() {

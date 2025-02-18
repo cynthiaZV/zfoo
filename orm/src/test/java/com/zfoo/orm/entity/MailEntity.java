@@ -13,35 +13,33 @@
 
 package com.zfoo.orm.entity;
 
-import com.zfoo.orm.model.anno.EntityCache;
-import com.zfoo.orm.model.anno.Id;
-import com.zfoo.orm.model.anno.Index;
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.anno.EntityCache;
+import com.zfoo.orm.anno.Id;
+import com.zfoo.orm.anno.Index;
+import com.zfoo.orm.model.IEntity;
 
 import java.util.Date;
 
 
 /**
  * @author godotg
- * @version 3.0
  */
 @EntityCache
 public class MailEntity implements IEntity<String> {
 
     @Id
-    private String id;
+    private String mailId;
 
     @Index(ascending = true, unique = false)
     private String userName;
 
     private String content;
 
-    @Index(ascending = true, unique = false, ttlExpireAfterSeconds = 10)
     private Date createDate;
 
     public static MailEntity valueOf(String id, String userName, String content, Date createDate) {
         var entity = new MailEntity();
-        entity.id = id;
+        entity.mailId = id;
         entity.userName = userName;
         entity.content = content;
         entity.createDate = createDate;
@@ -50,15 +48,15 @@ public class MailEntity implements IEntity<String> {
 
     @Override
     public String id() {
-        return id;
+        return mailId;
     }
 
-    public String getId() {
-        return id;
+    public String getMailId() {
+        return mailId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setMailId(String mailId) {
+        this.mailId = mailId;
     }
 
     public String getUserName() {

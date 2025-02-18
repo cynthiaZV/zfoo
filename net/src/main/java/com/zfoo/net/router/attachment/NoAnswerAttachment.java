@@ -12,37 +12,21 @@
 
 package com.zfoo.net.router.attachment;
 
+import com.zfoo.protocol.anno.Protocol;
+
 /**
  * not used attachment
  *
  * @author godotg
- * @version 3.0
  */
-public class NoAnswerAttachment implements IAttachment {
-
-    public static final short PROTOCOL_ID = 4;
-
+@Protocol(id = 5)
+public class NoAnswerAttachment {
     private int taskExecutorHash;
 
     public static NoAnswerAttachment valueOf(int taskExecutorHash) {
         var attachment = new NoAnswerAttachment();
         attachment.taskExecutorHash = taskExecutorHash;
         return attachment;
-    }
-
-    @Override
-    public AttachmentType packetType() {
-        return AttachmentType.NO_ANSWER_PACKET;
-    }
-
-    @Override
-    public int taskExecutorHash() {
-        return taskExecutorHash;
-    }
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
     }
 
     public int getTaskExecutorHash() {

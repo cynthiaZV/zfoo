@@ -17,9 +17,8 @@ import com.zfoo.net.config.model.ConsumerConfig;
 import com.zfoo.net.config.model.ConsumerModule;
 import com.zfoo.net.config.model.ProviderConfig;
 import com.zfoo.net.config.model.ProviderModule;
-import com.zfoo.net.consumer.registry.RegisterVO;
-import com.zfoo.protocol.registration.ProtocolModule;
-import com.zfoo.util.net.HostAndPort;
+import com.zfoo.net.consumer.registry.Register;
+import com.zfoo.net.core.HostAndPort;
 import io.netty.util.NetUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,15 +27,14 @@ import java.util.List;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class RegistryTest {
 
     @Test
     public void registerVoTest() {
         // 定义2个模块：可以为服务提供者用，也可以为服务消费者用，这个仅仅是模块信息
-        var protocolModule1 = new ProtocolModule((byte) 100, "aaa");
-        var protocolModule2 = new ProtocolModule((byte) 120, "bbb");
+        var protocolModule1 = "aaa";
+        var protocolModule2 ="bbb";
 
         // 服务提供者模块列表和服务提供者配置
         // 定义2个服务提供者模块
@@ -45,18 +43,18 @@ public class RegistryTest {
         var providerConfig = ProviderConfig.valueOf(HostAndPort.valueOf("127.0.0.1", 80).toHostAndPortStr(), providerModules);
 
         // 服务消费者模块和服务消费者配置(服务消费者模块多一个负载均衡属性)
-        var consumerModules = List.of(new ConsumerModule(protocolModule1, "random", "a"), new ConsumerModule(protocolModule2, "random", "b"));
+        var consumerModules = List.of(new ConsumerModule("random", "a"), new ConsumerModule("random", "b"));
         // 服务消费者配置：这个是没Ip的
         var consumerConfig = ConsumerConfig.valueOf(consumerModules);
 
-        var vo = RegisterVO.valueOf("test", providerConfig, consumerConfig);
-        var voStr = vo.toString();
+        var register = Register.valueOf("test", providerConfig, consumerConfig);
+        var voStr = register.toString();
 
         // test | 127.0.0.1:80 | provider:[100-aaa-a, 120-bbb-b] | consumer:[100-aaa-random-a, 120-bbb-random-b]
         System.out.println(voStr);
 
-        var newVo = RegisterVO.parseString(voStr);
-        Assert.assertEquals(vo, newVo);
+        var newRegister = Register.parseString(voStr);
+        Assert.assertEquals(register, newRegister);
 
         // /127.0.0.1
         System.out.println(NetUtil.LOCALHOST);

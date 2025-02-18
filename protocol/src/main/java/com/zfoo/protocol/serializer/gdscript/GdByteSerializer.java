@@ -24,7 +24,6 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class GdByteSerializer implements IGdSerializer {
 
@@ -35,15 +34,15 @@ public class GdByteSerializer implements IGdSerializer {
 
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
         builder.append(StringUtils.format("buffer.writeByte({})", objectStr)).append(LS);
     }
 
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
 
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
         builder.append(StringUtils.format("var {} = buffer.readByte()", result)).append(LS);
         return result;
     }

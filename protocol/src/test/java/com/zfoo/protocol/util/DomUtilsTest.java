@@ -21,24 +21,24 @@ public class DomUtilsTest {
 
     private static final String XML_WITH_HEAD = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n" +
             "\n" +
-            "<protocols author=\"godotg\">\n" +
-            "    <module id=\"1\" name=\"common\" minId=\"1000\" maxId=\"2000\">\n" +
+            "<protocols>\n" +
+            "    <module id=\"1\" name=\"common\">\n" +
             "        <protocol id=\"1000\" location=\"com.zfoo.test.CM_Int\"/>\n" +
             "        <protocol id=\"2000\" location=\"com.zfoo.test.SM_Int\"/>\n" +
             "    </module>\n" +
             "\n" +
-            "    <module id=\"2\" name=\"common\" minId=\"2000\" maxId=\"3000\">\n" +
+            "    <module id=\"2\" name=\"common\">\n" +
             "        <protocol id=\"3000\" location=\"com.zfoo.test.CM_Float\"/>\n" +
             "    </module>\n" +
             "</protocols>";
 
-    private static final String XML_OF_STANDARD_TEXT = "<protocols author=\"godotg\">\n" +
-            "    <module id=\"1\" name=\"common\" minId=\"1000\" maxId=\"2000\">\n" +
+    private static final String XML_OF_STANDARD_TEXT = "<protocols>\n" +
+            "    <module id=\"1\" name=\"common\">\n" +
             "        <protocol id=\"1000\" location=\"com.zfoo.test.CM_Int\"/>\n" +
             "        <protocol id=\"2000\" location=\"com.zfoo.test.SM_Int\"/>\n" +
             "    </module>\n" +
             "\n" +
-            "    <module id=\"2\" name=\"common\" minId=\"2000\" maxId=\"3000\">\n" +
+            "    <module id=\"2\" name=\"common\">\n" +
             "        <protocol id=\"3000\" location=\"com.zfoo.test.CM_Float\"/>\n" +
             "    </module>\n" +
             "</protocols>";
@@ -46,13 +46,16 @@ public class DomUtilsTest {
     @Test
     public void testXmlWithHead() {
         var protos = DomUtils.string2Object(XML_WITH_HEAD, XmlProtocols.class);
-        Assert.assertEquals("godotg", protos.getAuthor());
+        Assert.assertEquals(protos.getModules().get(0).getId(), 1);
+        Assert.assertEquals(protos.getModules().get(1).getId(), 2);
+        Assert.assertEquals(protos.getModules().get(0).getProtocols().get(0).getId(), 1000);
     }
 
     @Test
     public void testXmlOfStandardText() {
         var protos = DomUtils.string2Object(XML_OF_STANDARD_TEXT, XmlProtocols.class);
-        Assert.assertEquals("godotg", protos.getAuthor());
+        Assert.assertEquals(protos.getModules().get(0).getId(), 1);
+        Assert.assertEquals(protos.getModules().get(1).getId(), 2);
     }
 
 }

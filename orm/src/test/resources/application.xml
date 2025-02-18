@@ -19,7 +19,7 @@
 
     <context:component-scan base-package="com.zfoo.orm"/>
 
-    <orm:config id="config" entity-package="com.zfoo.orm.**.entity">
+    <orm:orm id="ormManager" entity-package="com.zfoo.orm.**.entity">
 
         <orm:host database="${mongodb.database}" user="${mongodb.user}" password="${mongodb.password}">
             <orm:address name="${mongodb.address.name}" url="${mongodb.address.url}"/>
@@ -27,18 +27,18 @@
 
         <!-- 缓存策略 -->
         <orm:caches>
-            <orm:cache strategy="default" size="6000" expire-millisecond="600000"/>
-            <orm:cache strategy="hundred" size="100" expire-millisecond="600000"/>
-            <orm:cache strategy="thousand" size="1000" expire-millisecond="600000"/>
-            <orm:cache strategy="threeThousand" size="3000" expire-millisecond="600000"/>
+            <orm:cache strategy="default" size="6000" expire-millisecond="60000"/>
+            <orm:cache strategy="hundred" size="100" expire-millisecond="60000"/>
+            <orm:cache strategy="thousand" size="1000" expire-millisecond="60000"/>
+            <orm:cache strategy="threeThousand" size="3000" expire-millisecond="60000"/>
         </orm:caches>
 
         <!-- 持久化策略 -->
         <orm:persisters>
-            <orm:persister strategy="default" type="time" config="600000"/>
+            <orm:persister strategy="default" type="time" config="30000"/>
             <orm:persister strategy="cron30s" type="cron" config="0/30 * * * * ?"/>
             <orm:persister strategy="time30s" type="time" config="30000"/>
         </orm:persisters>
-    </orm:config>
+    </orm:orm>
 
 </beans>

@@ -19,8 +19,10 @@
             <xsd:element name="address" maxOccurs="unbounded" type="addressAttributeType"/>
         </xsd:sequence>
         <xsd:attribute name="center" type="xsd:string" use="required"/>
+        <xsd:attribute name="path" type="xsd:string" use="optional"/>
         <xsd:attribute name="user" type="xsd:string" use="required"/>
         <xsd:attribute name="password" type="xsd:string" use="required"/>
+        <xsd:attribute name="driver-class-name" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="providersType">
@@ -43,12 +45,11 @@
     </xsd:complexType>
 
     <xsd:complexType name="consumerAttributeType">
-        <xsd:attribute name="protocol-module" type="xsd:string" use="required"/>
         <xsd:attribute name="load-balancer" type="xsd:string" default="consistent-hash"/>
         <xsd:attribute name="consumer" type="xsd:string" use="required"/>
     </xsd:complexType>
 
-    <xsd:complexType name="configType">
+    <xsd:complexType name="netType">
         <xsd:sequence>
             <xsd:choice minOccurs="0" maxOccurs="1">
                 <xsd:element name="registry" type="addressType"/>
@@ -65,20 +66,14 @@
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:string" use="required"/>
         <xsd:attribute name="protocol-location" type="xsd:string" use="required"/>
-        <xsd:attribute name="javascript-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="typescript-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="csharp-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="lua-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="gdscript-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="cpp-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="go-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="protobuf-protocol" type="xsd:string" default="false"/>
-        <xsd:attribute name="fold-protocol" type="xsd:string" default="false"/>
+        <xsd:attribute name="merge-protocol" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="fold-protocol" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="code-languages" type="xsd:string"/>
         <xsd:attribute name="protocol-path" type="xsd:string"/>
         <xsd:attribute name="protocol-param" type="xsd:string"/>
     </xsd:complexType>
 
-    <xsd:element name="config" type="configType"/>
+    <xsd:element name="net" type="netType"/>
 
 
 </xsd:schema>

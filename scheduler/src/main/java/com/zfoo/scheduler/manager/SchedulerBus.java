@@ -15,11 +15,10 @@ package com.zfoo.scheduler.manager;
 
 import com.zfoo.protocol.collection.CollectionUtils;
 import com.zfoo.protocol.util.StringUtils;
+import com.zfoo.protocol.util.ThreadUtils;
 import com.zfoo.scheduler.SchedulerContext;
-import com.zfoo.scheduler.model.vo.SchedulerDefinition;
+import com.zfoo.scheduler.enhance.SchedulerDefinition;
 import com.zfoo.scheduler.util.TimeUtils;
-import com.zfoo.util.SafeRunnable;
-import com.zfoo.util.ThreadUtils;
 import io.netty.util.concurrent.FastThreadLocalThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class SchedulerBus {
+
 
     private static final Logger logger = LoggerFactory.getLogger(SchedulerBus.class);
 
@@ -44,10 +43,6 @@ public abstract class SchedulerBus {
      */
     private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new SchedulerThreadFactory(1));
 
-    /**
-     * executor创建的线程id号
-     */
-    private static long threadId = 0;
 
     /**
      * 上一次trigger触发时间
@@ -68,8 +63,6 @@ public abstract class SchedulerBus {
                 logger.error("scheduler triggers an error.", e);
             }
         }, 0, TimeUtils.MILLIS_PER_SECOND, TimeUnit.MILLISECONDS);
-
-        executor.scheduleAtFixedRate(TimeUtils::currentTimeMillis, 0, 20, TimeUnit.MILLISECONDS);
     }
 
     public static class SchedulerThreadFactory implements ThreadFactory {
@@ -79,7 +72,7 @@ public abstract class SchedulerBus {
         private final ThreadGroup group;
 
         public SchedulerThreadFactory(int poolNumber) {
-            this.group = ThreadUtils.currentThreadGroup();
+            this.group = Thread.currentThread().getThreadGroup();
             this.poolNumber = poolNumber;
         }
 
@@ -90,7 +83,7 @@ public abstract class SchedulerBus {
             thread.setDaemon(false);
             thread.setPriority(Thread.NORM_PRIORITY);
             thread.setUncaughtExceptionHandler((t, e) -> logger.error(t.toString(), e));
-            threadId = thread.getId();
+            ThreadUtils.registerSingleThreadExecutor(thread, executor);
             return thread;
         }
 
@@ -144,8 +137,10 @@ public abstract class SchedulerBus {
                 // 到达触发时间，则执行runnable方法
                 try {
                     scheduler.getScheduler().invoke();
+                } catch (Exception e) {
+                    logger.error("scheduler invoke exception", e);
                 } catch (Throwable t) {
-                    logger.error("scheduler任务调度未知异常", t);
+                    logger.error("scheduler invoke error", t);
                 }
                 // 重新设置下一次的触发时间戳
                 triggerTimestamp = TimeUtils.nextTimestampByCronExpression(scheduler.getCronExpression(), timestampZonedDataTime);
@@ -167,24 +162,18 @@ public abstract class SchedulerBus {
     /**
      * 不断执行的周期循环任务
      */
-    public static void scheduleAtFixedRate(Runnable runnable, long period, TimeUnit unit) {
-        if (SchedulerContext.isStop()) {
-            return;
-        }
+    public static ScheduledFuture<?> scheduleAtFixedRate(Runnable runnable, long period, TimeUnit unit) {
 
-        executor.scheduleAtFixedRate(SafeRunnable.valueOf(runnable), 0, period, unit);
+        return executor.scheduleAtFixedRate(ThreadUtils.safeRunnable(runnable), 0, period, unit);
     }
 
 
     /**
      * 固定延迟执行的任务
      */
-    public static void schedule(Runnable runnable, long delay, TimeUnit unit) {
-        if (SchedulerContext.isStop()) {
-            return;
-        }
+    public static ScheduledFuture<?> schedule(Runnable runnable, long delay, TimeUnit unit) {
 
-        executor.schedule(SafeRunnable.valueOf(runnable), delay, unit);
+        return executor.schedule(ThreadUtils.safeRunnable(runnable), delay, unit);
     }
 
     /**
@@ -195,10 +184,7 @@ public abstract class SchedulerBus {
             return;
         }
 
-        schedulerDefList.add(SchedulerDefinition.valueOf(cron, runnable));
+        registerScheduler(SchedulerDefinition.valueOf(cron, runnable));
     }
 
-    public static Executor threadExecutor(long currentThreadId) {
-        return threadId == currentThreadId ? executor : null;
-    }
 }

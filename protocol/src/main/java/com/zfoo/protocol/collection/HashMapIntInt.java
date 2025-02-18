@@ -21,7 +21,6 @@ import java.util.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class HashMapIntInt implements Map<Integer, Integer> {
 
@@ -403,6 +402,19 @@ public class HashMapIntInt implements Map<Integer, Integer> {
         public int size() {
             return HashMapIntInt.this.size();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Map<?, ?> m)) {
+            return false;
+        }
+        return m.equals(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

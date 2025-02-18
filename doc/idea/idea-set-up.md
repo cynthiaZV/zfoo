@@ -20,9 +20,9 @@
 - git下载代码慢的解决方法|无法下载代码的解决方法，取消git配置使用git config --global --unset http.proxy
 
 ```
-使用vpn
-git config --global http.proxy http://127.0.0.1:10809
-git config --global https.proxy https://127.0.0.1:10809
+使用vpn，老版本的是10809端口，新版本的只有一个10809端口
+git config --global http.proxy http://127.0.0.1:10808
+git config --global https.proxy https://127.0.0.1:10808
 ```
 
 - 换行符
@@ -33,6 +33,7 @@ git config --global core.autocrlf input
 ```
 
 - google translate设置
+
 ```
 direct -> domain:zfoo.net
 
@@ -40,6 +41,14 @@ direct -> domain:zfoo.net
 proxy -> 
 ranslate.googleapis.com, 
 ranslate.google.com
+```
+
+- idea git log 不同颜色
+
+```
+黄色代表HEAD,
+绿色表示的是你本地分支,
+紫色是远程分支,
 ```
 
 ## 3. nodejs安装
@@ -50,6 +59,14 @@ ranslate.google.com
 查看npm是否安装成功：npm --version；  
 查看nodejs是否安装成功：node --version；
 ```
+
+- nodejs设置代理，大部分代理软件在windows的http代理端口是10809，ubuntu的是10808
+
+```
+npm config set proxy http://127.0.0.1:10809
+```
+
+- npm install -g yarn
 
 - 在package.json文件右键,npm install安装依赖包
 
@@ -62,27 +79,16 @@ ranslate.google.com
 
 ## 4. mongodb
 
-### mongo 4.0
-1. 直接安装MongoDB，用custom自定义安装目录，一般用默认的安装目录即可，不要勾选mongoDB compass
+1. 直接安装MongoDB，用custom自定义安装目录，一般用默认的安装目录即可，不要勾选mongoDB compas
 2. 将C:\Program Files\MongoDB\Server\4.2\bin配置到环境变量中，便于全局使用
-3. mongo -version # 查看安装的版本
+3. 直接安装MongoSh，将安装目录定位到MongoDB的bin目录
+4. mongo -version # 查看安装的版本
 
-### mongo 6.0
-1. 直接安装MongoDB，用custom自定义安装目录，一般用默认的安装目录即可，不要勾选mongoDB compass
-2. 直接安装MongoSh，将安装目录定位到MongoDB的bin目录
-
-
-## 5. idea，mongodb，postman
-
-## 6. 中间件安装
+## 5. 中间件安装
 
 - zookeeper安装，解压过后，直接运行zkServer.md，zookeeper运行需要依赖JAVA_HOME环境变量
 
-## 7. rider安装
-
-## 8. unity安装
-
-## 9. 办公软件
+## 6. 办公软件
 
 ```
 Google浏览器
@@ -94,12 +100,6 @@ adobe ps , premiere
 obs studio
 steam
 迅雷迷你版
-```
-
-## 10. 聊天软件
-
-```
-qq，微信，钉钉，discord
 ```
 
 # Ⅱ. IntelliJ相关设置
@@ -175,10 +175,15 @@ See the License for the specific language governing permissions and limitations 
 - idea代理设置
   ![Image text](../image/idea/idea-proxy.jpg)
 
+- maven需要设置代理，把当前目录中的settings.xml复制到.m2文件夹下，settings.xml中配置了proxy网络代理
+  ![Image text](../image/idea/maven-settings-config.png)
+
 - maven代理设置（非全局），-DproxySet=true -DproxyHost=127.0.0.1 -DproxyPort=10809
   ![Image text](../image/idea/idea-proxy-maven.jpg)
 
 - 设置自动下载源代码，将上图的sources，documentation，annotations勾上
+
+- mvn clean install -U ，强制检查maven库
 
 ## 6 使用Idea默认的快捷键设置
 
@@ -195,6 +200,7 @@ replace，设置为alt+f
 ### 4.2 服务器插件安装
 
 - translate插件
+
 ```
 快捷键设置
 Show Translation Dialog，设置为ctrl + shift + x
@@ -232,15 +238,3 @@ Translate，设置为ctrl + x
   ![Image text](../image/idea/idea-setting-html-0.png)
   ![Image text](../image/idea/idea-setting-html-1.png)
 
-## 5.Lingoes安装
-
-- 在电脑管家上下载也可以，直接默认安装
-  ![Image text](../image/idea/lingoes-00.png)
-  ![Image text](../image/idea/lingoes-01.png)
-  ![Image text](../image/idea/lingoes-02.png)
-
-```
-在下面的文件夹下，将Lingoes English.zip解压到这个目录下
-C:\Users\Administrator\AppData\Local\Lingoes\Translator\user_data\speech
-重启Lingoes，在设置->语言中，选择声音，英语
-```

@@ -13,7 +13,7 @@
 
 package com.zfoo.orm.cache.persister;
 
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.model.IEntity;
 import com.zfoo.scheduler.util.TimeUtils;
 
 /**
@@ -22,9 +22,8 @@ import com.zfoo.scheduler.util.TimeUtils;
  * 需要持久化的一个节点
  *
  * @author godotg
- * @version 3.0
  */
-public class PNode<E extends IEntity<?>> {
+public class PNode<PK extends Comparable<PK>, E extends IEntity<PK>> {
 
     // 写入数据库的时间
     private volatile long writeToDbTime;
@@ -38,10 +37,12 @@ public class PNode<E extends IEntity<?>> {
 
     public PNode(E entity) {
         this.entity = entity;
+        resetTime(TimeUtils.now());
+    }
 
-        var currentTime = TimeUtils.now();
-        this.writeToDbTime = currentTime;
-        this.modifiedTime = currentTime;
+    public void resetTime(long timestamp) {
+        this.writeToDbTime = timestamp;
+        this.modifiedTime = timestamp;
     }
 
     public E getEntity() {

@@ -13,17 +13,15 @@
 
 package com.zfoo.net.packet.websocket;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.anno.Protocol;
 
 import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class WebSocketObjectB implements IPacket {
-
-    public static final short PROTOCOL_ID = 2072;
+@Protocol(id = 2072)
+public class WebSocketObjectB {
 
     private boolean flag;
 
@@ -38,11 +36,6 @@ public class WebSocketObjectB implements IPacket {
 
     public void setFlag(boolean flag) {
         this.flag = flag;
-    }
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
     }
 
 

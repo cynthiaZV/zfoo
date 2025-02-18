@@ -1,3 +1,5 @@
+import EmptyObject from './packet/EmptyObject.js';
+import VeryBigObject from './packet/VeryBigObject.js';
 import ComplexObject from './packet/ComplexObject.js';
 import NormalObject from './packet/NormalObject.js';
 import ObjectA from './packet/ObjectA.js';
@@ -9,6 +11,8 @@ const protocols = new Map();
 const ProtocolManager = {};
 
 // initProtocol
+protocols.set(0, EmptyObject);
+protocols.set(1, VeryBigObject);
 protocols.set(100, ComplexObject);
 protocols.set(101, NormalObject);
 protocols.set(102, ObjectA);
@@ -18,7 +22,7 @@ protocols.set(104, SimpleObject);
 ProtocolManager.getProtocol = function getProtocol(protocolId) {
     const protocol = protocols.get(protocolId);
     if (protocol === null) {
-        throw new Error('[protocolId:' + protocolId + ']协议不存在');
+        throw new Error('[protocolId:' + protocolId + '] not exist');
     }
     return protocol;
 };

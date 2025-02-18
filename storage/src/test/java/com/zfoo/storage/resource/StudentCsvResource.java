@@ -13,15 +13,14 @@
 
 package com.zfoo.storage.resource;
 
-import com.zfoo.storage.model.anno.Id;
-import com.zfoo.storage.model.anno.Index;
-import com.zfoo.storage.model.anno.Resource;
+import com.zfoo.storage.anno.Id;
+import com.zfoo.storage.anno.Index;
+import com.zfoo.storage.anno.Storage;
 
 /**
  * @author godotg
- * @version 4.0
  */
-@Resource(alias="StudentCsvResource")
+@Storage("StudentCsvResource")
 public class StudentCsvResource {
 
     @Id

@@ -13,13 +13,13 @@
 
 package com.zfoo.net.core.http;
 
+import com.zfoo.net.core.HostAndPort;
 import com.zfoo.net.packet.DecodedPacketInfo;
 import com.zfoo.net.packet.http.HttpHelloRequest;
 import com.zfoo.net.router.attachment.HttpAttachment;
 import com.zfoo.protocol.exception.RunException;
 import com.zfoo.protocol.util.StringUtils;
-import com.zfoo.util.ThreadUtils;
-import com.zfoo.util.net.HostAndPort;
+import com.zfoo.protocol.util.ThreadUtils;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Ignore;
@@ -30,7 +30,6 @@ import java.util.function.Function;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Ignore
 public class HttpServerTest {

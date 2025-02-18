@@ -12,7 +12,10 @@
 
 package com.zfoo.net.router.attachment;
 
-import com.zfoo.protocol.IPacket;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.zfoo.protocol.anno.Note;
+import com.zfoo.protocol.anno.Protocol;
 import com.zfoo.scheduler.util.TimeUtils;
 
 import java.util.concurrent.CompletableFuture;
@@ -20,13 +23,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class SignalAttachment implements IAttachment {
+@Protocol(id = 0)
+@JsonIgnoreProperties("responseFuture")
+public class SignalAttachment {
 
-    public static final short PROTOCOL_ID = 0;
-
+    /**
+     * EN:Negative signalId are allowed
+     * CN:允许负数的signalId
+     */
     public static final AtomicInteger ATOMIC_ID = new AtomicInteger(0);
+    /**
+     * 0 for the server, 1 or 2 for the sync or async native client, 12 for the outside client such as browser, mobile
+     */
+    public static final byte SIGNAL_SERVER = 0;
+    public static final byte SIGNAL_NATIVE_ARGUMENT_CLIENT = 1;
+    public static final byte SIGNAL_NATIVE_NO_ARGUMENT_CLIENT = 2;
+    public static final byte SIGNAL_OUTSIDE_CLIENT = 12;
 
     /**
      * EN:Unique identification of a packet, unique representation of an attachment, hashcode() and equals() equals signalId value
@@ -40,34 +53,22 @@ public class SignalAttachment implements IAttachment {
      */
     private int taskExecutorHash = -1;
 
-    /**
-     * true for the client, false for the server
-     */
-    private boolean client = true;
+    @Note("0 for the server, 1 or 2 for the sync or async native client, 12 for the outside client such as browser, mobile")
+    private byte client = SIGNAL_NATIVE_ARGUMENT_CLIENT;
 
     /**
-     * The time the client sent it
+     * The timestamp the client sent it
      */
-    private transient long timestamp = TimeUtils.now();
+    private long timestamp = TimeUtils.now();
 
     /**
      * EN:The method of callback when the client receives a reply from the server
      * CN:客户端收到服务器回复的时候回调的方法
      */
-    private transient CompletableFuture<IPacket> responseFuture = new CompletableFuture<>();
+    @JsonIgnore
+    private transient CompletableFuture<Object> responseFuture = new CompletableFuture<>();
 
     public SignalAttachment() {
-    }
-
-
-    @Override
-    public AttachmentType packetType() {
-        return AttachmentType.SIGNAL_PACKET;
-    }
-
-    @Override
-    public int taskExecutorHash() {
-        return taskExecutorHash;
     }
 
     public long getTimestamp() {
@@ -76,11 +77,6 @@ public class SignalAttachment implements IAttachment {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
-    }
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
     }
 
 
@@ -117,20 +113,19 @@ public class SignalAttachment implements IAttachment {
         this.taskExecutorHash = taskExecutorHash;
     }
 
-    public boolean isClient() {
+    public byte getClient() {
         return client;
     }
 
-    public void setClient(boolean client) {
+    public void setClient(byte client) {
         this.client = client;
     }
 
-
-    public CompletableFuture<IPacket> getResponseFuture() {
+    public CompletableFuture<Object> getResponseFuture() {
         return responseFuture;
     }
 
-    public void setResponseFuture(CompletableFuture<IPacket> responseFuture) {
+    public void setResponseFuture(CompletableFuture<Object> responseFuture) {
         this.responseFuture = responseFuture;
     }
 }

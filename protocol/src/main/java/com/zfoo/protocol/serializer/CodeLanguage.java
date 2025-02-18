@@ -12,31 +12,76 @@
 
 package com.zfoo.protocol.serializer;
 
+import com.zfoo.protocol.serializer.cpp.CodeGenerateCpp;
+import com.zfoo.protocol.serializer.csharp.CodeGenerateCsharp;
+import com.zfoo.protocol.serializer.dart.CodeGenerateDart;
+import com.zfoo.protocol.serializer.ecmascript.CodeGenerateEcmaScript;
+import com.zfoo.protocol.serializer.gdscript.CodeGenerateGdScript;
+import com.zfoo.protocol.serializer.golang.CodeGenerateGolang;
+import com.zfoo.protocol.serializer.java.CodeGenerateJava;
+import com.zfoo.protocol.serializer.javascript.CodeGenerateJavaScript;
+import com.zfoo.protocol.serializer.kotlin.CodeGenerateKotlin;
+import com.zfoo.protocol.serializer.lua.CodeGenerateLua;
+import com.zfoo.protocol.serializer.php.CodeGeneratePhp;
+import com.zfoo.protocol.serializer.python.CodeGeneratePython;
+import com.zfoo.protocol.serializer.ruby.CodeGenerateRuby;
+import com.zfoo.protocol.serializer.rust.CodeGenerateRust;
+import com.zfoo.protocol.serializer.scala.CodeGenerateScala;
+import com.zfoo.protocol.serializer.swift.CodeGenerateSwift;
+import com.zfoo.protocol.serializer.typescript.CodeGenerateTypeScript;
+
 /**
  * @author godotg
- * @version 3.0
  */
 public enum CodeLanguage {
 
     /**
      * Javassist字节码增强
      */
-    Enhance,
+    Enhance(1, null),
 
-    Cpp,
+    Java(1 << 1, CodeGenerateJava.class),
 
-    Go,
+    Kotlin(1 << 2, CodeGenerateKotlin.class),
 
-    JavaScript,
+    Scala(1 << 3, CodeGenerateScala.class),
 
-    TypeScript,
+    Dart(1 << 3, CodeGenerateDart.class),
 
-    Lua,
+    Swift(1 << 4, CodeGenerateSwift.class),
 
-    CSharp,
+    Cpp(1 << 7, CodeGenerateCpp.class),
 
-    GdScript,
+    Rust(1 << 8, CodeGenerateRust.class),
 
-    Protobuf
+    Golang(1 << 9, CodeGenerateGolang.class),
+
+    JavaScript(1 << 10, CodeGenerateJavaScript.class),
+
+    EcmaScript(1 << 11, CodeGenerateEcmaScript.class),
+
+    TypeScript(1 << 12, CodeGenerateTypeScript.class),
+
+    Lua(1 << 15, CodeGenerateLua.class),
+
+    CSharp(1 << 18, CodeGenerateCsharp.class),
+
+    GdScript(1 << 20, CodeGenerateGdScript.class),
+
+    Python(1 << 22, CodeGeneratePython.class),
+
+    Php(1 << 28, CodeGeneratePhp.class),
+
+    Ruby(1 << 29, CodeGenerateRuby.class),
+
+    Protobuf(1 << 30, null);
+
+    public final int id;
+    public final Class<? extends ICodeGenerate> codeGenerateClass;
+
+    private CodeLanguage(int id, Class<? extends ICodeGenerate> codeGenerateClass) {
+        this.id = id;
+        this.codeGenerateClass = codeGenerateClass;
+    }
 
 }

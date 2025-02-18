@@ -12,22 +12,16 @@
 
 package com.zfoo.net.packet.json;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.anno.Protocol;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class JsonHelloResponse implements IPacket {
-
-    public static final short PROTOCOL_ID = 1601;
+@Protocol(id = 1601)
+public class JsonHelloResponse {
 
     private String message;
 
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
-    }
 
     public String getMessage() {
         return message;

@@ -13,21 +13,18 @@
 package com.zfoo.net.task;
 
 import com.zfoo.net.NetContext;
-import com.zfoo.net.router.attachment.IAttachment;
 import com.zfoo.net.session.Session;
-import com.zfoo.protocol.IPacket;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public final class PacketReceiverTask implements Runnable {
 
     private Session session;
-    private IPacket packet;
-    private IAttachment attachment;
+    private Object packet;
+    private Object attachment;
 
-    public PacketReceiverTask(Session session, IPacket packet, IAttachment attachment) {
+    public PacketReceiverTask(Session session, Object packet, Object attachment) {
         this.session = session;
         this.packet = packet;
         this.attachment = attachment;
@@ -35,8 +32,9 @@ public final class PacketReceiverTask implements Runnable {
 
     @Override
     public void run() {
-        NetContext.getRouter().atReceiver(session, packet, attachment);
+        NetContext.getRouter().atReceiver(this);
     }
+
 
     public Session getSession() {
         return session;
@@ -46,19 +44,19 @@ public final class PacketReceiverTask implements Runnable {
         this.session = session;
     }
 
-    public IPacket getPacket() {
+    public Object getPacket() {
         return packet;
     }
 
-    public void setPacket(IPacket packet) {
+    public void setPacket(Object packet) {
         this.packet = packet;
     }
 
-    public IAttachment getAttachment() {
+    public Object getAttachment() {
         return attachment;
     }
 
-    public void setAttachment(IAttachment attachment) {
+    public void setAttachment(Object attachment) {
         this.attachment = attachment;
     }
 }

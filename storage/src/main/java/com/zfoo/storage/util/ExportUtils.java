@@ -19,8 +19,8 @@ import com.zfoo.protocol.util.ReflectionUtils;
 import com.zfoo.protocol.util.StringUtils;
 import com.zfoo.storage.interpreter.CsvReader;
 import com.zfoo.storage.interpreter.ExcelReader;
-import com.zfoo.storage.model.resource.ResourceEnum;
-import com.zfoo.storage.model.vo.Storage;
+import com.zfoo.storage.interpreter.data.StorageEnum;
+import com.zfoo.storage.model.IStorage;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class ExportUtils {
 
@@ -82,19 +81,19 @@ public abstract class ExportUtils {
     public static List<File> scanExcelFiles(String inputDir) {
         return FileUtils.getAllReadableFiles(new File(inputDir))
                 .stream()
-                .filter(it -> ResourceEnum.isExcel(FileUtils.fileExtName(it.getName())))
-                .collect(Collectors.toList());
+                .filter(it -> StorageEnum.isExcel(FileUtils.fileExtName(it.getName())))
+                .toList();
     }
 
     public static List<File> scanCsvFiles(String inputDir) {
         return FileUtils.getAllReadableFiles(new File(inputDir))
                 .stream()
-                .filter(it -> ResourceEnum.getResourceEnumByType(FileUtils.fileExtName(it.getName())) == ResourceEnum.CSV)
-                .collect(Collectors.toList());
+                .filter(it -> StorageEnum.getResourceEnumByType(FileUtils.fileExtName(it.getName())) == StorageEnum.CSV)
+                .toList();
     }
 
     // 将class里的map自动赋值storage
-    public static <T> T autoWrapData(Class<T> clazz, Map<Class<?>, Storage<?, ?>> storageMap) {
+    public static <T> T autoWrapData(Class<T> clazz, Map<Class<?>, IStorage<?, ?>> storageMap) {
         var instance = ReflectionUtils.newInstance(clazz);
 
         var filedList = ReflectionUtils.notStaticAndTransientFields(clazz);

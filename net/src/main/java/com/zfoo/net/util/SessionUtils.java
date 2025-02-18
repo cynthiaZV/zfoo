@@ -22,7 +22,6 @@ import static com.zfoo.net.handler.BaseRouteHandler.SESSION_KEY;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class SessionUtils {
 
@@ -30,6 +29,7 @@ public abstract class SessionUtils {
 
     private static final String CHANNEL_SIMPLE_INFO_TEMPLATE = "[sid:{}][uid:{}]";
 
+    private static final String CHANNEL_TEMPLATE = "[channel:{}]";
 
     public static boolean isActive(Session session) {
         return session != null && session.getChannel().isActive();
@@ -44,10 +44,32 @@ public abstract class SessionUtils {
         return sessionAttr.get();
     }
 
+    public static String toIp(Session session) {
+        try {
+            var remoteAddress = session.getChannel().remoteAddress().toString();
+            var ip = StringUtils.substringAfterFirst(remoteAddress, StringUtils.SLASH);
+            ip = StringUtils.substringBeforeFirst(ip, StringUtils.COLON);
+            return StringUtils.trim(ip);
+        } catch (Throwable t) {
+            // do nothing
+            // to avoid: io.netty.channel.unix.Errors$NativeIoException: readAddress(..) failed: Connection reset by peer
+            // 有些情况当建立连接过后迅速关闭，这个时候取remoteAddress会有异常
+        }
+        return StringUtils.EMPTY;
+    }
+
+    public static long toIpLong(Session session) {
+        var ip = toIp(session);
+        if (StringUtils.isBlank(ip)) {
+            return session.getSid();
+        }
+        return NetUtils.ipToLong(ip);
+    }
+
     public static String sessionInfo(ChannelHandlerContext ctx) {
         var session = SessionUtils.getSession(ctx);
         if (session == null) {
-            return StringUtils.format(CHANNEL_INFO_TEMPLATE, ctx.channel());
+            return StringUtils.format(CHANNEL_TEMPLATE, ctx.channel());
         }
         return sessionInfo(session);
     }
@@ -56,21 +78,13 @@ public abstract class SessionUtils {
         if (session == null) {
             return CHANNEL_INFO_TEMPLATE;
         }
-        var remoteAddress = StringUtils.EMPTY;
-        try {
-            remoteAddress = StringUtils.substringAfterFirst(session.getChannel().remoteAddress().toString(), StringUtils.SLASH);
-        } catch (Throwable t) {
-            // do nothing
-            // to avoid: io.netty.channel.unix.Errors$NativeIoException: readAddress(..) failed: Connection reset by peer
-            // 有些情况当建立连接过后迅速关闭，这个时候取remoteAddress会有异常
-        }
-        return StringUtils.format(CHANNEL_INFO_TEMPLATE, remoteAddress, session.getSid(), session.getUid());
+        return StringUtils.format(CHANNEL_INFO_TEMPLATE, toIp(session), session.getSid(), session.getUid());
     }
 
     public static String sessionSimpleInfo(ChannelHandlerContext ctx) {
         var session = SessionUtils.getSession(ctx);
         if (session == null) {
-            return StringUtils.format(CHANNEL_SIMPLE_INFO_TEMPLATE, ctx.channel());
+            return StringUtils.format(CHANNEL_TEMPLATE, ctx.channel());
         }
         return sessionSimpleInfo(session);
     }

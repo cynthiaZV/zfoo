@@ -13,27 +13,20 @@
 
 package com.zfoo.net.packet;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.anno.Protocol;
 
 import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class ObjectA implements IPacket {
-
-    public static final short PROTOCOL_ID = 1116;
+@Protocol(id = 1116)
+public class ObjectA {
 
     private int a;
 
 
     private ObjectB objectB;
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
-    }
 
     public int getA() {
         return a;

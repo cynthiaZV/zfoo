@@ -27,7 +27,6 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class CutDownArraySerializer implements ICutDownSerializer {
 
@@ -49,24 +48,28 @@ public class CutDownArraySerializer implements ICutDownSerializer {
             case "boolean":
                 switch (language) {
                     case Enhance:
-                        builder.append(StringUtils.format("{}.writeBooleanArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
+                        builder.append(StringUtils.format("{}.writeBoolArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
-                        builder.append(StringUtils.format("buffer.writeBooleanArray({})", objectStr)).append(LS);
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeBoolArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
+                        builder.append(StringUtils.format("buffer.writeBoolArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
-                        builder.append(StringUtils.format("buffer:writeBooleanArray({})", objectStr)).append(LS);
+                        builder.append(StringUtils.format("buffer:writeBoolArray({})", objectStr)).append(LS);
+                        break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeBoolArray({});", objectStr)).append(LS);
                         break;
                     case CSharp:
-                        builder.append(StringUtils.format("buffer.WriteBooleanArray({});", objectStr)).append(LS);
+                        builder.append(StringUtils.format("buffer.WriteBoolArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
-                        builder.append(StringUtils.format("buffer.WriteBooleanArray({})", objectStr)).append(LS);
+                    case Golang:
+                        builder.append(StringUtils.format("buffer.WriteBoolArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("buffer.writeBooleanArray({});", objectStr)).append(LS);
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
+                        builder.append(StringUtils.format("buffer.writeBoolArray({});", objectStr)).append(LS);
                         break;
                     default:
                         flag = false;
@@ -75,24 +78,28 @@ public class CutDownArraySerializer implements ICutDownSerializer {
             case "Boolean":
                 switch (language) {
                     case Enhance:
-                        builder.append(StringUtils.format("{}.writeBooleanBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
+                        builder.append(StringUtils.format("{}.writeBoolBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
-                        builder.append(StringUtils.format("buffer.writeBooleanArray({})", objectStr)).append(LS);
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeBoolArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
+                        builder.append(StringUtils.format("buffer.writeBoolArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
-                        builder.append(StringUtils.format("buffer:writeBooleanArray({})", objectStr)).append(LS);
+                        builder.append(StringUtils.format("buffer:writeBoolArray({})", objectStr)).append(LS);
+                        break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeBoolArray({});", objectStr)).append(LS);
                         break;
                     case CSharp:
-                        builder.append(StringUtils.format("buffer.WriteBooleanArray({});", objectStr)).append(LS);
+                        builder.append(StringUtils.format("buffer.WriteBoolArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
-                        builder.append(StringUtils.format("buffer.WriteBooleanArray({})", objectStr)).append(LS);
+                    case Golang:
+                        builder.append(StringUtils.format("buffer.WriteBoolArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("buffer.writeBooleanArray({});", objectStr)).append(LS);
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
+                        builder.append(StringUtils.format("buffer.writeBoolArray({});", objectStr)).append(LS);
                         break;
                     default:
                         flag = false;
@@ -103,21 +110,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeByteArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeByteArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeByteArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeByteArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeByteArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteByteArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteByteArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeByteArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -129,21 +140,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeByteBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeByteArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeByteArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeByteArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeByteArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteByteArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteByteArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeByteArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -155,21 +170,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeShortArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeShortArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeShortArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeShortArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeShortArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteShortArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteShortArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeShortArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -181,21 +200,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeShortBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeShortArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeShortArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeShortArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeShortArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteShortArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteShortArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeShortArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -207,21 +230,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeIntArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeIntArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeIntArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeIntArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeIntArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteIntArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteIntArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeIntArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -233,21 +260,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeIntBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeIntArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeIntArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeIntArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeIntArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteIntArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteIntArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeIntArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -259,21 +290,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeLongArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeLongArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeLongArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeLongArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeLongArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteLongArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteLongArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeLongArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -285,21 +320,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeLongBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeLongArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeLongArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeLongArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeLongArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteLongArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteLongArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeLongArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -311,21 +350,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeFloatArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeFloatArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeFloatArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeFloatArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeFloatArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteFloatArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteFloatArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeFloatArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -337,21 +380,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeFloatBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeFloatArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeFloatArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeFloatArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeFloatArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteFloatArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteFloatArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeFloatArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -363,21 +410,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeDoubleArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeDoubleArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeDoubleArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeDoubleArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeDoubleArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteDoubleArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteDoubleArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeDoubleArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -389,21 +440,25 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeDoubleBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeDoubleArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeDoubleArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeDoubleArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeDoubleArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteDoubleArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteDoubleArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeDoubleArray({});", objectStr)).append(LS);
                         break;
                     default:
@@ -415,74 +470,26 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}.writeStringArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
                         break;
-                    case GdScript:
+                    case Rust:
+                        builder.append(StringUtils.format("buffer.writeStringArray(&{});", objectStr)).append(LS);
+                        break;
+                    case Kotlin, Scala, GdScript, Python, Ruby, Swift:
                         builder.append(StringUtils.format("buffer.writeStringArray({})", objectStr)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("buffer:writeStringArray({})", objectStr)).append(LS);
                         break;
+                    case Php:
+                        builder.append(StringUtils.format("$buffer->writeStringArray({});", objectStr)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("buffer.WriteStringArray({});", objectStr)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("buffer.WriteStringArray({})", objectStr)).append(LS);
                         break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
+                    case Cpp, Java, Dart, JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("buffer.writeStringArray({});", objectStr)).append(LS);
-                        break;
-                    default:
-                        flag = false;
-                }
-                break;
-            case "char":
-                switch (language) {
-                    case Enhance:
-                        builder.append(StringUtils.format("{}.writeCharArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
-                        break;
-                    case GdScript:
-                        builder.append(StringUtils.format("buffer.writeCharArray({})", objectStr)).append(LS);
-                        break;
-                    case Lua:
-                        builder.append(StringUtils.format("buffer:writeCharArray({})", objectStr)).append(LS);
-                        break;
-                    case CSharp:
-                        builder.append(StringUtils.format("buffer.WriteCharArray({});", objectStr)).append(LS);
-                        break;
-                    case Go:
-                        builder.append(StringUtils.format("buffer.WriteCharArray({})", objectStr)).append(LS);
-                        break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("buffer.writeCharArray({});", objectStr)).append(LS);
-                        break;
-                    default:
-                        flag = false;
-                }
-                break;
-            case "Character":
-                switch (language) {
-                    case Enhance:
-                        builder.append(StringUtils.format("{}.writeCharBoxArray($1, {});", EnhanceUtils.byteBufUtils, objectStr));
-                        break;
-                    case GdScript:
-                        builder.append(StringUtils.format("buffer.writeCharArray({})", objectStr)).append(LS);
-                        break;
-                    case Lua:
-                        builder.append(StringUtils.format("buffer:writeCharArray({})", objectStr)).append(LS);
-                        break;
-                    case CSharp:
-                        builder.append(StringUtils.format("buffer.WriteCharArray({});", objectStr)).append(LS);
-                        break;
-                    case Go:
-                        builder.append(StringUtils.format("buffer.WriteCharArray({})", objectStr)).append(LS);
-                        break;
-                    case Cpp:
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("buffer.writeCharArray({});", objectStr)).append(LS);
                         break;
                     default:
                         flag = false;
@@ -491,28 +498,30 @@ public class CutDownArraySerializer implements ICutDownSerializer {
             default:
                 if (arrayField.getArrayElementRegistration() instanceof ObjectProtocolField) {
                     var protocolId = ((ObjectProtocolField) arrayField.getArrayElementRegistration()).getProtocolId();
+                    var protocolName = EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(protocolId);
                     switch (language) {
                         case Enhance:
                             builder.append(StringUtils.format("{}.writePacketArray($1, {}, {});", EnhanceUtils.byteBufUtils, objectStr, EnhanceUtils.getProtocolRegistrationFieldNameByProtocolId(protocolId)));
                             break;
-                        case GdScript:
+                        case GdScript, Python, Ruby, Swift:
                             builder.append(StringUtils.format("buffer.writePacketArray({}, {})", objectStr, protocolId)).append(LS);
                             break;
                         case Lua:
                             builder.append(StringUtils.format("buffer:writePacketArray({}, {})", objectStr, protocolId)).append(LS);
                             break;
+                        case Php:
+                            builder.append(StringUtils.format("$buffer->writePacketArray({}, {});", objectStr, protocolId)).append(LS);
+                            break;
                         case CSharp:
-                            builder.append(StringUtils.format("buffer.WritePacketArray<{}>({}, {});", EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(protocolId), objectStr, protocolId)).append(LS);
+                            builder.append(StringUtils.format("buffer.WritePacketArray<{}>({}, {});", protocolName, objectStr, protocolId)).append(LS);
                             break;
                         case Cpp:
-                            builder.append(StringUtils.format("buffer.writePacketArray<{}>({}, {});", EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(protocolId), objectStr, protocolId)).append(LS);
+                            builder.append(StringUtils.format("buffer.writePacketArray<{}>({}, {});", protocolName, objectStr, protocolId)).append(LS);
                             break;
-                        case JavaScript:
-                        case TypeScript:
+                        case Dart, JavaScript, EcmaScript, TypeScript:
                             builder.append(StringUtils.format("buffer.writePacketArray({}, {});", objectStr, protocolId)).append(LS);
                             break;
-                        case Go:
-                        case Protobuf:
+                        case Rust, Golang, Protobuf, Java, Kotlin, Scala:
                         default:
                             flag = false;
                     }
@@ -529,33 +538,54 @@ public class CutDownArraySerializer implements ICutDownSerializer {
         var arrayField = (ArrayField) fieldRegistration;
         var arrayName = getArrayClassName(arrayField);
 
-        var array = "array" + GenerateProtocolFile.index.getAndIncrement();
+        var array = "array" + GenerateProtocolFile.localVariableId++;
 
         var flag = true;
         switch (arrayName) {
             case "boolean":
                 switch (language) {
                     case Enhance:
-                        builder.append(StringUtils.format("{}[] {} = {}.readBooleanArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
+                        builder.append(StringUtils.format("{}[] {} = {}.readBoolArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
+                        break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readBoolArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readBoolArray()", array)).append(LS);
                         break;
                     case GdScript:
-                        builder.append(StringUtils.format("var {} = buffer.readBooleanArray()", array)).append(LS);
+                        builder.append(StringUtils.format("var {} = buffer.readBoolArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readBoolArray()", array)).append(LS);
                         break;
                     case Lua:
-                        builder.append(StringUtils.format("local {} = buffer:readBooleanArray()", array)).append(LS);
+                        builder.append(StringUtils.format("local {} = buffer:readBoolArray()", array)).append(LS);
+                        break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readBoolArray();", array)).append(LS);
                         break;
                     case CSharp:
-                        builder.append(StringUtils.format("var {} = buffer.ReadBooleanArray();", array)).append(LS);
+                        builder.append(StringUtils.format("var {} = buffer.ReadBoolArray();", array)).append(LS);
                         break;
-                    case Go:
-                        builder.append(StringUtils.format("var {} = buffer.ReadBooleanArray()", array)).append(LS);
+                    case Golang:
+                        builder.append(StringUtils.format("var {} = buffer.ReadBoolArray()", array)).append(LS);
                         break;
                     case Cpp:
-                        builder.append(StringUtils.format("auto {} = buffer.readBooleanArray();", array)).append(LS);
+                        builder.append(StringUtils.format("auto {} = buffer.readBoolArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("const {} = buffer.readBooleanArray();", array)).append(LS);
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readBoolArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readBoolArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readBoolArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
+                        builder.append(StringUtils.format("const {} = buffer.readBoolArray();", array)).append(LS);
                         break;
                     default:
                         flag = false;
@@ -564,26 +594,47 @@ public class CutDownArraySerializer implements ICutDownSerializer {
             case "Boolean":
                 switch (language) {
                     case Enhance:
-                        builder.append(StringUtils.format("{}[] {} = {}.readBooleanBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
+                        builder.append(StringUtils.format("{}[] {} = {}.readBoolBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
+                        break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readBoolArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readBoolArray()", array)).append(LS);
                         break;
                     case GdScript:
-                        builder.append(StringUtils.format("var {} = buffer.readBooleanArray()", array)).append(LS);
+                        builder.append(StringUtils.format("var {} = buffer.readBoolArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readBoolArray()", array)).append(LS);
                         break;
                     case Lua:
-                        builder.append(StringUtils.format("local {} = buffer:readBooleanArray()", array)).append(LS);
+                        builder.append(StringUtils.format("local {} = buffer:readBoolArray()", array)).append(LS);
+                        break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readBoolArray();", array)).append(LS);
                         break;
                     case CSharp:
-                        builder.append(StringUtils.format("var {} = buffer.ReadBooleanArray();", array)).append(LS);
+                        builder.append(StringUtils.format("var {} = buffer.ReadBoolArray();", array)).append(LS);
                         break;
-                    case Go:
-                        builder.append(StringUtils.format("var {} = buffer.ReadBooleanArray()", array)).append(LS);
+                    case Golang:
+                        builder.append(StringUtils.format("var {} = buffer.ReadBoolArray()", array)).append(LS);
                         break;
                     case Cpp:
-                        builder.append(StringUtils.format("auto {} = buffer.readBooleanArray();", array)).append(LS);
+                        builder.append(StringUtils.format("auto {} = buffer.readBoolArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("const {} = buffer.readBooleanArray();", array)).append(LS);
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readBoolArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readBoolArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readBoolArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
+                        builder.append(StringUtils.format("const {} = buffer.readBoolArray();", array)).append(LS);
                         break;
                     default:
                         flag = false;
@@ -594,23 +645,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readByteArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readByteArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readByteArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readByteArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readByteArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readByteArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readByteArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadByteArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadByteArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readByteArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readByteArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readByteArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readByteArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readByteArray();", array)).append(LS);
                         break;
                     default:
@@ -622,23 +694,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readByteBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readByteArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readByteArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readByteArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readByteArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readByteArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readByteArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadByteArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadByteArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readByteArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readByteArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readByteArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readByteArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readByteArray();", array)).append(LS);
                         break;
                     default:
@@ -650,23 +743,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readShortArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readShortArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readShortArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readShortArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readShortArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readShortArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readShortArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadShortArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadShortArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readShortArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readShortArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readShortArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readShortArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readShortArray();", array)).append(LS);
                         break;
                     default:
@@ -678,23 +792,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readShortBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readShortArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readShortArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readShortArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readShortArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readShortArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readShortArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadShortArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadShortArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readShortArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readShortArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readShortArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readShortArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readShortArray();", array)).append(LS);
                         break;
                     default:
@@ -706,23 +841,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readIntArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readIntArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readIntArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readIntArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readIntArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readIntArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readIntArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadIntArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadIntArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readIntArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readIntArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readIntArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readIntArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readIntArray();", array)).append(LS);
                         break;
                     default:
@@ -734,23 +890,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readIntBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readIntArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readIntArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readIntArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readIntArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readIntArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readIntArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadIntArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadIntArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readIntArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readIntArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readIntArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readIntArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readIntArray();", array)).append(LS);
                         break;
                     default:
@@ -762,23 +939,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readLongArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readLongArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readLongArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readLongArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readLongArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readLongArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readLongArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadLongArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadLongArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readLongArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readLongArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readLongArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readLongArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readLongArray();", array)).append(LS);
                         break;
                     default:
@@ -790,23 +988,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readLongBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readLongArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readLongArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readLongArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readLongArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readLongArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readLongArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadLongArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadLongArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readLongArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readLongArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readLongArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readLongArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readLongArray();", array)).append(LS);
                         break;
                     default:
@@ -818,23 +1037,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readFloatArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readFloatArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readFloatArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readFloatArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readFloatArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readFloatArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = buffer->readFloatArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadFloatArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadFloatArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readFloatArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readFloatArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readFloatArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readFloatArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readFloatArray();", array)).append(LS);
                         break;
                     default:
@@ -846,23 +1086,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readFloatBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readFloatArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readFloatArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readFloatArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readFloatArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readFloatArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = buffer->readFloatArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadFloatArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadFloatArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readFloatArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readFloatArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readFloatArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readFloatArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readFloatArray();", array)).append(LS);
                         break;
                     default:
@@ -874,23 +1135,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readDoubleArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readDoubleArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readDoubleArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readDoubleArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readDoubleArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readDoubleArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readDoubleArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadDoubleArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadDoubleArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readDoubleArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readDoubleArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readDoubleArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readDoubleArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readDoubleArray();", array)).append(LS);
                         break;
                     default:
@@ -902,23 +1184,44 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readDoubleBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readDoubleArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readDoubleArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readDoubleArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readDoubleArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readDoubleArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readDoubleArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadDoubleArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadDoubleArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readDoubleArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readDoubleArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readDoubleArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readDoubleArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readDoubleArray();", array)).append(LS);
                         break;
                     default:
@@ -930,80 +1233,45 @@ public class CutDownArraySerializer implements ICutDownSerializer {
                     case Enhance:
                         builder.append(StringUtils.format("{}[] {} = {}.readStringArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
                         break;
+                    case Rust:
+                        builder.append(StringUtils.format("let {} = buffer.readStringArray();", array)).append(LS);
+                        break;
+                    case Swift:
+                        builder.append(StringUtils.format("let {} = buffer.readStringArray()", array)).append(LS);
+                        break;
                     case GdScript:
                         builder.append(StringUtils.format("var {} = buffer.readStringArray()", array)).append(LS);
+                        break;
+                    case Python, Ruby:
+                        builder.append(StringUtils.format("{} = buffer.readStringArray()", array)).append(LS);
                         break;
                     case Lua:
                         builder.append(StringUtils.format("local {} = buffer:readStringArray()", array)).append(LS);
                         break;
+                    case Php:
+                        array = "$" + array;
+                        builder.append(StringUtils.format("{} = $buffer->readStringArray();", array)).append(LS);
+                        break;
                     case CSharp:
                         builder.append(StringUtils.format("var {} = buffer.ReadStringArray();", array)).append(LS);
                         break;
-                    case Go:
+                    case Golang:
                         builder.append(StringUtils.format("var {} = buffer.ReadStringArray()", array)).append(LS);
                         break;
                     case Cpp:
                         builder.append(StringUtils.format("auto {} = buffer.readStringArray();", array)).append(LS);
                         break;
-                    case JavaScript:
-                    case TypeScript:
+                    case Java, Dart:
+                        builder.append(StringUtils.format("var {} = buffer.readStringArray();", array)).append(LS);
+                        break;
+                    case Kotlin:
+                        builder.append(StringUtils.format("val {} = buffer.readStringArray()", array)).append(LS);
+                        break;
+                    case Scala:
+                        builder.append(StringUtils.format("val {} = buffer.readStringArray", array)).append(LS);
+                        break;
+                    case JavaScript, EcmaScript, TypeScript:
                         builder.append(StringUtils.format("const {} = buffer.readStringArray();", array)).append(LS);
-                        break;
-                    default:
-                        flag = false;
-                }
-                break;
-            case "char":
-                switch (language) {
-                    case Enhance:
-                        builder.append(StringUtils.format("{}[] {} = {}.readCharArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
-                        break;
-                    case GdScript:
-                        builder.append(StringUtils.format("var {} = buffer.readCharArray()", array)).append(LS);
-                        break;
-                    case Lua:
-                        builder.append(StringUtils.format("local {} = buffer:readCharArray()", array)).append(LS);
-                        break;
-                    case CSharp:
-                        builder.append(StringUtils.format("var {} = buffer.ReadCharArray();", array)).append(LS);
-                        break;
-                    case Go:
-                        builder.append(StringUtils.format("var {} = buffer.ReadCharArray()", array)).append(LS);
-                        break;
-                    case Cpp:
-                        builder.append(StringUtils.format("auto {} = buffer.readCharArray();", array)).append(LS);
-                        break;
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("const {} = buffer.readCharArray();", array)).append(LS);
-                        break;
-                    default:
-                        flag = false;
-                }
-                break;
-            case "Character":
-                switch (language) {
-                    case Enhance:
-                        builder.append(StringUtils.format("{}[] {} = {}.readCharBoxArray($1);", arrayName, array, EnhanceUtils.byteBufUtils));
-                        break;
-                    case GdScript:
-                        builder.append(StringUtils.format("var {} = buffer.readCharArray()", array)).append(LS);
-                        break;
-                    case Lua:
-                        builder.append(StringUtils.format("local {} = buffer:readCharArray()", array)).append(LS);
-                        break;
-                    case CSharp:
-                        builder.append(StringUtils.format("var {} = buffer.ReadCharArray();", array)).append(LS);
-                        break;
-                    case Go:
-                        builder.append(StringUtils.format("var {} = buffer.ReadCharArray()", array)).append(LS);
-                        break;
-                    case Cpp:
-                        builder.append(StringUtils.format("auto {} = buffer.readCharArray();", array)).append(LS);
-                        break;
-                    case JavaScript:
-                    case TypeScript:
-                        builder.append(StringUtils.format("const {} = buffer.readCharArray();", array)).append(LS);
                         break;
                     default:
                         flag = false;
@@ -1012,27 +1280,38 @@ public class CutDownArraySerializer implements ICutDownSerializer {
             default:
                 if (arrayField.getArrayElementRegistration() instanceof ObjectProtocolField) {
                     var protocolId = ((ObjectProtocolField) arrayField.getArrayElementRegistration()).getProtocolId();
+                    var protocolName = EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(protocolId);
                     switch (language) {
                         // Java不支持泛型的数组初始化，这里不做任何操作
+                        case Swift:
+                            builder.append(StringUtils.format("let {} = buffer.readPacketArray({}) as! Array<{}>", array, protocolId, protocolName)).append(LS);
+                            break;
                         case GdScript:
                             builder.append(StringUtils.format("var {} = buffer.readPacketArray({})", array, protocolId)).append(LS);
+                            break;
+                        case Python, Ruby:
+                            builder.append(StringUtils.format("{} = buffer.readPacketArray({})", array, protocolId)).append(LS);
                             break;
                         case Lua:
                             builder.append(StringUtils.format("local {} = buffer:readPacketArray({})", array, protocolId)).append(LS);
                             break;
+                        case Php:
+                            array = "$" + array;
+                            builder.append(StringUtils.format("{} = $buffer->readPacketArray({});", array, protocolId)).append(LS);
+                            break;
                         case CSharp:
-                            builder.append(StringUtils.format("var {} = buffer.ReadPacketArray<{}>({});", array, EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(protocolId), protocolId)).append(LS);
+                            builder.append(StringUtils.format("var {} = buffer.ReadPacketArray<{}>({});", array, protocolName, protocolId)).append(LS);
                             break;
                         case Cpp:
-                            builder.append(StringUtils.format("auto {} = buffer.readPacketArray<{}>({});", array, EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(protocolId), protocolId)).append(LS);
+                            builder.append(StringUtils.format("auto {} = buffer.readPacketArray<{}>({});", array, protocolName, protocolId)).append(LS);
                             break;
-                        case JavaScript:
-                        case TypeScript:
+                        case Dart:
+                            builder.append(StringUtils.format("var {} = buffer.readPacketArray<{}>({});", array, protocolName, protocolId)).append(LS);
+                            break;
+                        case JavaScript, EcmaScript, TypeScript:
                             builder.append(StringUtils.format("const {} = buffer.readPacketArray({});", array, protocolId)).append(LS);
                             break;
-                        case Go:
-                        case Protobuf:
-                        case Enhance:
+                        case Rust, Golang, Java, Kotlin, Scala, Protobuf, Enhance:
                         default:
                             flag = false;
                     }
@@ -1044,7 +1323,7 @@ public class CutDownArraySerializer implements ICutDownSerializer {
         if (flag) {
             return array;
         } else {
-            GenerateProtocolFile.index.getAndDecrement();
+            GenerateProtocolFile.localVariableId--;
             return null;
         }
     }

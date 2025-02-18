@@ -13,44 +13,42 @@
 
 package com.zfoo.orm.query;
 
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.model.IEntity;
 import com.zfoo.protocol.model.Pair;
 
 import java.util.List;
 
 
 /**
- * EQ、=	等于（=）
- * NE、<>	不等于（<>）
- * GT、>	大于（>）
- * GTE、>=	大于等于（>=）
- * LT、<	小于（<）
- * lte、<=	小于等于（<=）
- * LIKE	模糊查询
- * [n] in	（不在）IN 查询
- *
  * @author sinprog
- * @version 3.0
  */
-public interface IQueryBuilder<E extends IEntity> {
+public interface IQueryBuilder<PK extends Comparable<PK>, E extends IEntity<PK>> {
 
-    IQueryBuilder<E> eq(String fieldName, Object fieldValue);
+    // EQ、=	等于（=）
+    IQueryBuilder<PK, E> eq(String fieldName, Object fieldValue);
 
-    IQueryBuilder<E> ne(String fieldName, Object fieldValue);
+    // NE、<>	不等于（<>）
+    IQueryBuilder<PK, E> ne(String fieldName, Object fieldValue);
 
-    IQueryBuilder<E> in(String fieldName, List<?> fieldValueList);
+    IQueryBuilder<PK, E> in(String fieldName, List<?> fieldValueList);
 
-    IQueryBuilder<E> nin(String fieldName, List<?> fieldValueList);
+    // [n] in	（不在）IN 查询
+    IQueryBuilder<PK, E> nin(String fieldName, List<?> fieldValueList);
 
-    IQueryBuilder<E> like(String fieldName, String fieldValue);
+    // LT、<	小于（<）
+    IQueryBuilder<PK, E> lt(String fieldName, Object fieldValue);
 
-    IQueryBuilder<E> lt(String fieldName, Object fieldValue);
+    // lte、<=	小于等于（<=）
+    IQueryBuilder<PK, E> lte(String fieldName, Object fieldValue);
 
-    IQueryBuilder<E> lte(String fieldName, Object fieldValue);
+    //  GT、>	大于（>）
+    IQueryBuilder<PK, E> gt(String fieldName, Object fieldValue);
 
-    IQueryBuilder<E> gt(String fieldName, Object fieldValue);
+    // GTE、>=	大于等于（>=）
+    IQueryBuilder<PK, E> gte(String fieldName, Object fieldValue);
 
-    IQueryBuilder<E> gte(String fieldName, Object fieldValue);
+    // LIKE	模糊查询
+    IQueryBuilder<PK, E> like(String fieldName, String fieldValue);
 
     List<E> queryAll();
 

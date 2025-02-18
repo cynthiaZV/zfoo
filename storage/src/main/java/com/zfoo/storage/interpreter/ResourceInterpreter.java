@@ -15,51 +15,32 @@ package com.zfoo.storage.interpreter;
 import com.zfoo.protocol.exception.RunException;
 import com.zfoo.protocol.util.ReflectionUtils;
 import com.zfoo.protocol.util.StringUtils;
-import com.zfoo.storage.model.anno.ExcelFieldName;
-import com.zfoo.storage.model.anno.Id;
-import com.zfoo.storage.model.resource.ResourceData;
-import com.zfoo.storage.model.resource.ResourceEnum;
-import com.zfoo.storage.strategy.*;
-import org.springframework.context.support.ConversionServiceFactoryBean;
-import org.springframework.core.convert.TypeDescriptor;
+import com.zfoo.storage.anno.AliasFieldName;
+import com.zfoo.storage.anno.Id;
+import com.zfoo.storage.convert.ConvertUtils;
+import com.zfoo.storage.interpreter.data.StorageData;
+import com.zfoo.storage.interpreter.data.StorageEnum;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author godotg
- * @version 4.0
  */
 public class ResourceInterpreter {
 
-    private static final TypeDescriptor TYPE_DESCRIPTOR = TypeDescriptor.valueOf(String.class);
-
-    private static final ConversionServiceFactoryBean conversionServiceFactoryBean = new ConversionServiceFactoryBean();
-
-    static {
-        var converters = new HashSet<>();
-        converters.add(new JsonToArrayConverter());
-        converters.add(new JsonToListConverter());
-        converters.add(new JsonToMapConverter());
-        converters.add(new JsonToObjectConverter());
-        converters.add(new StringToClassConverter());
-        converters.add(new StringToDateConverter());
-        converters.add(new StringToMapConverter());
-        conversionServiceFactoryBean.setConverters(converters);
-        conversionServiceFactoryBean.afterPropertiesSet();
-    }
 
     public static <T> List<T> read(InputStream inputStream, Class<T> clazz, String suffix) throws IOException {
-        ResourceData resource = null;
-        var resourceEnum = ResourceEnum.getResourceEnumByType(suffix);
-        if (resourceEnum == ResourceEnum.JSON) {
-            resource = JsonReader.readResourceDataFromCSV(inputStream);
-        } else if (resourceEnum == ResourceEnum.EXCEL_XLS || resourceEnum == ResourceEnum.EXCEL_XLSX) {
+        StorageData resource = null;
+        var resourceEnum = StorageEnum.getResourceEnumByType(suffix);
+        if (resourceEnum == StorageEnum.JSON) {
+            resource = JsonReader.readResourceDataFromJson(inputStream);
+        } else if (resourceEnum == StorageEnum.EXCEL_XLS || resourceEnum == StorageEnum.EXCEL_XLSX) {
             resource = ExcelReader.readResourceDataFromExcel(inputStream, clazz.getSimpleName());
-        } else if (resourceEnum == ResourceEnum.CSV) {
+        } else if (resourceEnum == StorageEnum.CSV) {
             resource = CsvReader.readResourceDataFromCSV(inputStream, clazz.getSimpleName());
         } else {
             throw new RunException("Configuration type [{}] of file [{}] is not supported", suffix, clazz.getSimpleName());
@@ -70,27 +51,48 @@ public class ResourceInterpreter {
         var cellFieldMap = getCellFieldMap(resource, clazz);
         var fieldInfos = getFieldInfos(cellFieldMap, clazz);
 
-        var iterator = resource.getRows().iterator();
-        // 从ROW_SERVER这行开始读取数据
-        while (iterator.hasNext()) {
-            var columns = iterator.next();
-            var instance = ReflectionUtils.newInstance(clazz);
+        if (clazz.isRecord()) {
+            Class[] constructParams = fieldInfos.stream().map(p -> p.field.getType()).toList().toArray(new Class[]{});
+            Constructor<T> constructor = ReflectionUtils.getConstructor(clazz, constructParams);
 
-            for (var fieldInfo : fieldInfos) {
-                var content = columns.get(fieldInfo.index);
-                if (StringUtils.isNotEmpty(content) || fieldInfo.field.getType() == String.class) {
+            var iterator = resource.getRows().iterator();
+            // 从ROW_SERVER这行开始读取数据
+            while (iterator.hasNext()) {
+                int index = 0;
+                var columns = iterator.next();
+                var params = new Object[fieldInfos.size()];
+
+                for (var fieldInfo : fieldInfos) {
+                    var content = columns.get(fieldInfo.index);
+                    if (StringUtils.isNotEmpty(content) || fieldInfo.field.getType() == String.class) {
+                        var value = ConvertUtils.convertField(content, fieldInfo.field);
+                        params[index++] = value;
+                    }
+                }
+                var instance = ReflectionUtils.newInstance(constructor, params);
+                result.add(instance);
+            }
+        } else {
+            var iterator = resource.getRows().iterator();
+            // 从ROW_SERVER这行开始读取数据
+            while (iterator.hasNext()) {
+                var columns = iterator.next();
+                var instance = ReflectionUtils.newInstance(clazz);
+
+                for (var fieldInfo : fieldInfos) {
+                    var content = columns.get(fieldInfo.index);
                     inject(instance, fieldInfo.field, content);
                 }
+                result.add(instance);
             }
-            result.add(instance);
         }
+
         return result;
     }
 
     private static void inject(Object instance, Field field, String content) {
         try {
-            var targetType = new TypeDescriptor(field);
-            var value = conversionServiceFactoryBean.getObject().convert(content, TYPE_DESCRIPTOR, targetType);
+            var value = ConvertUtils.convertField(content, field);
             ReflectionUtils.makeAccessible(field);
             ReflectionUtils.setField(field, instance, value);
         } catch (Exception e) {
@@ -100,7 +102,7 @@ public class ResourceInterpreter {
 
     // 优先使用ExcelFieldName注解表示的值当作列名
     private static String getExcelFieldName(Field field) {
-        return field.isAnnotationPresent(ExcelFieldName.class) ? field.getAnnotation(ExcelFieldName.class).value() : field.getName();
+        return field.isAnnotationPresent(AliasFieldName.class) ? field.getAnnotation(AliasFieldName.class).value() : field.getName();
     }
 
     // 只读取代码里写的字段
@@ -120,7 +122,7 @@ public class ResourceInterpreter {
                 }
             }
         }
-        return fieldList.stream().map(it -> new FieldInfo(cellFieldMap.get(getExcelFieldName(it)), it)).collect(Collectors.toList());
+        return fieldList.stream().map(it -> new FieldInfo(cellFieldMap.get(getExcelFieldName(it)), it)).toList();
     }
 
     private static class FieldInfo {
@@ -133,7 +135,7 @@ public class ResourceInterpreter {
         }
     }
 
-    public static Map<String, Integer> getCellFieldMap(ResourceData resource, Class<?> clazz) {
+    public static Map<String, Integer> getCellFieldMap(StorageData resource, Class<?> clazz) {
         var header = resource.getHeaders();
         if (header == null) {
             throw new RunException("Failed to get attribute control column from excel file of resource [class:{}]", clazz.getSimpleName());

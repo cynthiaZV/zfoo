@@ -14,11 +14,11 @@
 package com.zfoo.net.core.http;
 
 import com.zfoo.net.core.AbstractServer;
+import com.zfoo.net.core.HostAndPort;
 import com.zfoo.net.handler.ServerRouteHandler;
 import com.zfoo.net.handler.codec.http.HttpCodecHandler;
 import com.zfoo.net.packet.DecodedPacketInfo;
 import com.zfoo.protocol.util.IOUtils;
-import com.zfoo.util.net.HostAndPort;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -29,7 +29,6 @@ import java.util.function.Function;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class HttpServer extends AbstractServer<SocketChannel> {
 

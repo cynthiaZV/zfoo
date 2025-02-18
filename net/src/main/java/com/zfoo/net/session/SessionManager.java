@@ -13,38 +13,35 @@
 package com.zfoo.net.session;
 
 import com.zfoo.net.util.SessionUtils;
-import com.zfoo.util.security.IdUtils;
+import com.zfoo.protocol.collection.concurrent.ConcurrentHashMapLongObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class SessionManager implements ISessionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionManager.class);
 
     /**
-     * 作为服务器，被别的客户端连接的Session
+     * EN: As a server, the Session is connected by other clients
+     * CN: 作为服务器，被别的客户端连接的Session
+     * <p>
      * 如：自己作为网关，那肯定有一大堆客户端连接，他们连接上来后，就会保存下来这些信息。
      * 因此：要全局消息广播，其实要用这个Map
      */
-    private final Map<Long, Session> serverSessionMap = new ConcurrentHashMap<>();
-
+    private final ConcurrentHashMapLongObject<Session> serverSessionMap = new ConcurrentHashMapLongObject<>(128);
 
     /**
-     * 作为客户端，连接别的服务器上后，保存下来的Session
+     * EN: As a client, connect to another server and save Sessions
+     * CN: 作为客户端，连接别的服务器上后，保存下来的Session
      * 如：自己配置了Consumer，说明自己作为消费者将要消费远程接口，就会创建一个TcpClient去连接Provider，那么连接上后，就会保存下来到这个Map中
      */
-    private final Map<Long, Session> clientSessionMap = new ConcurrentHashMap<>();
-
-    private volatile int clientSessionChangeId = IdUtils.getLocalIntId();
-
+    private final ConcurrentHashMapLongObject<Session> clientSessionMap = new ConcurrentHashMapLongObject<>(8);
 
     @Override
     public void addServerSession(Session session) {
@@ -61,18 +58,24 @@ public class SessionManager implements ISessionManager {
             logger.error("[session:{}] does not exist", SessionUtils.sessionInfo(session));
             return;
         }
-        serverSessionMap.remove(session.getSid());
-        session.close();
+        try (session) {
+            serverSessionMap.remove(session.getSid());
+        }
     }
 
     @Override
-    public Session getServerSession(long id) {
-        return serverSessionMap.get(id);
+    public Session getServerSession(long sid) {
+        return serverSessionMap.get(sid);
     }
 
     @Override
-    public Map<Long, Session> getServerSessionMap() {
-        return Collections.unmodifiableMap(serverSessionMap);
+    public int serverSessionSize() {
+        return serverSessionMap.size();
+    }
+
+    @Override
+    public void forEachServerSession(Consumer<Session> consumer) {
+        serverSessionMap.forEachPrimitive(it -> consumer.accept(it.value()));
     }
 
     @Override
@@ -82,7 +85,6 @@ public class SessionManager implements ISessionManager {
             return;
         }
         clientSessionMap.put(session.getSid(), session);
-        clientSessionChangeId = IdUtils.getLocalIntId();
     }
 
     @Override
@@ -91,24 +93,24 @@ public class SessionManager implements ISessionManager {
             logger.error("[session:{}] does not exist", SessionUtils.sessionInfo(session));
             return;
         }
-        clientSessionMap.remove(session.getSid());
-        session.close();
-        clientSessionChangeId = IdUtils.getLocalIntId();
+        try (session) {
+            clientSessionMap.remove(session.getSid());
+        }
     }
 
     @Override
-    public Session getClientSession(long id) {
-        return clientSessionMap.get(id);
+    public Session getClientSession(long sid) {
+        return clientSessionMap.get(sid);
     }
 
     @Override
-    public Map<Long, Session> getClientSessionMap() {
-        return Collections.unmodifiableMap(clientSessionMap);
+    public void forEachClientSession(Consumer<Session> consumer) {
+        clientSessionMap.forEachPrimitive(it -> consumer.accept(it.value()));
     }
 
     @Override
-    public int getClientSessionChangeId() {
-        return clientSessionChangeId;
+    public int clientSessionSize() {
+        return clientSessionMap.size();
     }
 
 }

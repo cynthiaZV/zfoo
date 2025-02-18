@@ -12,15 +12,14 @@
 
 package com.zfoo.protocol.buffer.model;
 
-import com.zfoo.protocol.IPacket;
-import com.zfoo.protocol.registration.anno.Protocol;
+
+import com.zfoo.protocol.anno.Protocol;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Protocol(id = 1000)
-public class BigPacket implements IPacket {
+public class BigPacket {
 
     public int[] a = new int[10_0000];
 

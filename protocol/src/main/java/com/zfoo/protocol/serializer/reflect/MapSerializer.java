@@ -19,11 +19,11 @@ import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.registration.field.MapField;
 import io.netty.buffer.ByteBuf;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class MapSerializer implements ISerializer {
 
@@ -69,5 +69,18 @@ public class MapSerializer implements ISerializer {
             map.put(key, value);
         }
         return map;
+    }
+
+    @Override
+    public Object defaultValue(IFieldRegistration fieldRegistration) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public int predictionLength(IFieldRegistration fieldRegistration) {
+        var mapField = (MapField) fieldRegistration;
+        var keyLength = mapField.getMapKeyRegistration().serializer().predictionLength(mapField.getMapKeyRegistration());
+        var valueLength = mapField.getMapValueRegistration().serializer().predictionLength(mapField.getMapValueRegistration());
+        return 7 * (keyLength + valueLength);
     }
 }

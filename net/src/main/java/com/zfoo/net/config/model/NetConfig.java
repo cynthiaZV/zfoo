@@ -13,37 +13,32 @@
 
 package com.zfoo.net.config.model;
 
-import com.zfoo.net.consumer.registry.RegisterVO;
+import com.zfoo.net.consumer.registry.Register;
 import com.zfoo.protocol.generate.GenerateOperation;
 
 import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class NetConfig {
     private String id;
     private String protocolLocation;
-
     /**
-     * 协议生成属性变量对应于{@link GenerateOperation}
+     * {@link GenerateOperation}
+     */
+    private boolean mergeProtocol;
+    /**
+     * {@link GenerateOperation}
      */
     private boolean foldProtocol;
     private String protocolPath;
     private String protocolParam;
 
     /**
-     * 是否生成对应语言的协议
+     * 生成协议列表
      */
-    private boolean javascriptProtocol;
-    private boolean typescriptProtocol;
-    private boolean csharpProtocol;
-    private boolean luaProtocol;
-    private boolean gdscriptProtocol;
-    private boolean cppProtocol;
-    private boolean goProtocol;
-    private boolean protobufProtocol;
+    private String codeLanguages;
 
     /**
      * 注册中心
@@ -66,8 +61,8 @@ public class NetConfig {
     private ConsumerConfig consumer;
 
 
-    public RegisterVO toLocalRegisterVO() {
-        return RegisterVO.valueOf(id, provider, consumer);
+    public Register toLocalRegister() {
+        return Register.valueOf(id, provider, consumer);
     }
 
     public String getId() {
@@ -84,6 +79,14 @@ public class NetConfig {
 
     public void setProtocolLocation(String protocolLocation) {
         this.protocolLocation = protocolLocation;
+    }
+
+    public boolean isMergeProtocol() {
+        return mergeProtocol;
+    }
+
+    public void setMergeProtocol(boolean mergeProtocol) {
+        this.mergeProtocol = mergeProtocol;
     }
 
     public boolean isFoldProtocol() {
@@ -108,30 +111,6 @@ public class NetConfig {
 
     public void setProtocolParam(String protocolParam) {
         this.protocolParam = protocolParam;
-    }
-
-    public boolean isJavascriptProtocol() {
-        return javascriptProtocol;
-    }
-
-    public void setJavascriptProtocol(boolean javascriptProtocol) {
-        this.javascriptProtocol = javascriptProtocol;
-    }
-
-    public boolean isCsharpProtocol() {
-        return csharpProtocol;
-    }
-
-    public void setCsharpProtocol(boolean csharpProtocol) {
-        this.csharpProtocol = csharpProtocol;
-    }
-
-    public boolean isLuaProtocol() {
-        return luaProtocol;
-    }
-
-    public void setLuaProtocol(boolean luaProtocol) {
-        this.luaProtocol = luaProtocol;
     }
 
     public RegistryConfig getRegistry() {
@@ -166,44 +145,12 @@ public class NetConfig {
         this.consumer = consumer;
     }
 
-    public boolean isGdscriptProtocol() {
-        return gdscriptProtocol;
+    public String getCodeLanguages() {
+        return codeLanguages;
     }
 
-    public void setGdscriptProtocol(boolean gdscriptProtocol) {
-        this.gdscriptProtocol = gdscriptProtocol;
-    }
-
-    public boolean isProtobufProtocol() {
-        return protobufProtocol;
-    }
-
-    public void setProtobufProtocol(boolean protobufProtocol) {
-        this.protobufProtocol = protobufProtocol;
-    }
-
-    public boolean isCppProtocol() {
-        return cppProtocol;
-    }
-
-    public void setCppProtocol(boolean cppProtocol) {
-        this.cppProtocol = cppProtocol;
-    }
-
-    public boolean isTypescriptProtocol() {
-        return typescriptProtocol;
-    }
-
-    public void setTypescriptProtocol(boolean typescriptProtocol) {
-        this.typescriptProtocol = typescriptProtocol;
-    }
-
-    public boolean isGoProtocol() {
-        return goProtocol;
-    }
-
-    public void setGoProtocol(boolean goProtocol) {
-        this.goProtocol = goProtocol;
+    public void setCodeLanguages(String codeLanguages) {
+        this.codeLanguages = codeLanguages;
     }
 
     @Override

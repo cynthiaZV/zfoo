@@ -16,10 +16,10 @@ package com.zfoo.scheduler;
 import com.zfoo.protocol.collection.ArrayUtils;
 import com.zfoo.protocol.util.ReflectionUtils;
 import com.zfoo.protocol.util.StringUtils;
+import com.zfoo.protocol.util.ThreadUtils;
+import com.zfoo.scheduler.anno.Scheduler;
+import com.zfoo.scheduler.enhance.SchedulerDefinition;
 import com.zfoo.scheduler.manager.SchedulerBus;
-import com.zfoo.scheduler.model.anno.Scheduler;
-import com.zfoo.scheduler.model.vo.SchedulerDefinition;
-import com.zfoo.util.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -36,7 +36,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class SchedulerContext implements ApplicationListener<ApplicationContextEvent>, Ordered {
 
@@ -44,9 +43,9 @@ public class SchedulerContext implements ApplicationListener<ApplicationContextE
 
     private static SchedulerContext instance;
 
-    private static boolean stop = false;
-
     private ApplicationContext applicationContext;
+
+    private volatile boolean stop = false;
 
 
     public static SchedulerContext getSchedulerContext() {
@@ -58,30 +57,9 @@ public class SchedulerContext implements ApplicationListener<ApplicationContextE
     }
 
     public static boolean isStop() {
-        return stop;
+        return instance.stop;
     }
 
-
-    public synchronized static void shutdown() {
-        if (stop) {
-            return;
-        }
-
-        stop = true;
-
-        try {
-            Field field = SchedulerBus.class.getDeclaredField("executor");
-            ReflectionUtils.makeAccessible(field);
-            var executor = (ScheduledExecutorService) ReflectionUtils.getField(field, null);
-            ThreadUtils.shutdown(executor);
-        } catch (Throwable e) {
-            logger.error("Scheduler thread pool failed shutdown.", e);
-            return;
-        }
-
-        logger.info("Scheduler shutdown gracefully.");
-    }
-    
     @Override
     public void onApplicationEvent(ApplicationContextEvent event) {
         if (event instanceof ContextRefreshedEvent) {
@@ -140,6 +118,26 @@ public class SchedulerContext implements ApplicationListener<ApplicationContextE
                 throw new RuntimeException(t);
             }
         }
+    }
+
+    public synchronized static void shutdown() {
+        if (isStop()) {
+            return;
+        }
+
+        instance.stop = true;
+
+        try {
+            Field field = SchedulerBus.class.getDeclaredField("executor");
+            ReflectionUtils.makeAccessible(field);
+            var executor = (ScheduledExecutorService) ReflectionUtils.getField(field, null);
+            ThreadUtils.shutdown(executor);
+        } catch (Throwable e) {
+            logger.error("Scheduler thread pool failed shutdown.", e);
+            return;
+        }
+
+        logger.info("Scheduler shutdown gracefully.");
     }
 
     @Override

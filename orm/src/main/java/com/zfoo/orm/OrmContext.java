@@ -13,16 +13,13 @@
 
 package com.zfoo.orm;
 
-import com.mongodb.client.MongoClient;
-import com.zfoo.orm.manager.IOrmManager;
-import com.zfoo.orm.manager.OrmManager;
 import com.zfoo.orm.accessor.IAccessor;
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.manager.IOrmManager;
+import com.zfoo.orm.model.IEntity;
 import com.zfoo.orm.query.IQuery;
 import com.zfoo.orm.query.IQueryBuilder;
-import com.zfoo.protocol.util.ReflectionUtils;
 import com.zfoo.scheduler.SchedulerContext;
-import com.zfoo.scheduler.model.StopWatch;
+import com.zfoo.scheduler.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -34,7 +31,6 @@ import org.springframework.core.Ordered;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class OrmContext implements ApplicationListener<ApplicationContextEvent>, Ordered {
 
@@ -50,7 +46,7 @@ public class OrmContext implements ApplicationListener<ApplicationContextEvent>,
 
     private IOrmManager ormManager;
 
-    private boolean stop = false;
+    private volatile boolean stop = false;
 
     public static ApplicationContext getApplicationContext() {
         return instance.applicationContext;
@@ -64,7 +60,7 @@ public class OrmContext implements ApplicationListener<ApplicationContextEvent>,
         return instance.accessor;
     }
 
-    public static <E extends IEntity<?>> IQueryBuilder<E> getQuery(Class<E> entityClazz) {
+    public static <PK extends Comparable<PK>, E extends IEntity<PK>> IQueryBuilder<PK, E> getQuery(Class<E> entityClazz) {
         return instance.query.builder(entityClazz);
     }
 
@@ -93,46 +89,30 @@ public class OrmContext implements ApplicationListener<ApplicationContextEvent>,
 
             logger.info("Orm started successfully and cost [{}] seconds", stopWatch.costSeconds());
         } else if (event instanceof ContextClosedEvent) {
-            shutdownBefore();
-            shutdownBetween();
-            shutdownAfter();
+            shutdown();
         }
+    }
+
+    public static synchronized void shutdown() {
+        if (isStop()) {
+            return;
+        }
+        instance.stop = true;
+        SchedulerContext.shutdown();
+        try {
+            instance.ormManager
+                    .getAllEntityCaches()
+                    .forEach(it -> it.persistAllBlock());
+            instance.ormManager.mongoClient().close();
+        } catch (Exception e) {
+            logger.error("Failed to close the MongoClient database connection", e);
+        }
+        logger.info("Orm shutdown gracefully.");
     }
 
     @Override
     public int getOrder() {
         return 1;
-    }
-
-    public static synchronized void shutdownBefore() {
-        SchedulerContext.shutdown();
-    }
-
-    public static synchronized void shutdownBetween() {
-        instance.stop = true;
-        try {
-            instance.ormManager
-                    .getAllEntityCaches()
-                    .forEach(it -> it.persistAll());
-        } catch (Exception e) {
-            logger.error("关闭服务器时，持久化缓存数据异常", e);
-        } finally {
-            instance.stop = true;
-        }
-    }
-
-    public static synchronized void shutdownAfter() {
-        try {
-            var field = OrmManager.class.getDeclaredField("mongoClient");
-            ReflectionUtils.makeAccessible(field);
-            var mongoClient = (MongoClient) ReflectionUtils.getField(field, instance.ormManager);
-            mongoClient.close();
-        } catch (Exception e) {
-            logger.error("关闭MongoClient数据库连接失败", e);
-            return;
-        }
-
-        logger.info("Orm shutdown gracefully.");
     }
 
 }

@@ -23,7 +23,6 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class CsDoubleSerializer implements ICsSerializer {
 
@@ -35,7 +34,7 @@ public class CsDoubleSerializer implements ICsSerializer {
 
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("double {} = buffer.ReadDouble();", result)).append(LS);

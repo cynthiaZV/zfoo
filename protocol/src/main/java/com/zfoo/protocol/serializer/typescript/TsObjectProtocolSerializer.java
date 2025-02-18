@@ -14,7 +14,7 @@
 package com.zfoo.protocol.serializer.typescript;
 
 import com.zfoo.protocol.generate.GenerateProtocolFile;
-import com.zfoo.protocol.model.Triple;
+import com.zfoo.protocol.model.Pair;
 import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.registration.field.ObjectProtocolField;
 import com.zfoo.protocol.serializer.enhance.EnhanceObjectProtocolSerializer;
@@ -26,16 +26,15 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class TsObjectProtocolSerializer implements ITsSerializer {
 
     @Override
-    public Triple<String, String, String> field(Field field, IFieldRegistration fieldRegistration) {
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
         ObjectProtocolField objectProtocolField = (ObjectProtocolField) fieldRegistration;
         var protocolSimpleName = EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(objectProtocolField.getProtocolId());
-        var type = StringUtils.format(": {} | null", protocolSimpleName);
-        return new Triple<>(type, field.getName(), "null");
+        var type = StringUtils.format("{} | null", protocolSimpleName);
+        return new Pair<>(type, "null");
     }
 
     @Override
@@ -48,7 +47,7 @@ public class TsObjectProtocolSerializer implements ITsSerializer {
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
         ObjectProtocolField objectProtocolField = (ObjectProtocolField) fieldRegistration;
-        var result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        var result = "result" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("const {} = buffer.readPacket({});", result, objectProtocolField.getProtocolId())).append(LS);
         return result;

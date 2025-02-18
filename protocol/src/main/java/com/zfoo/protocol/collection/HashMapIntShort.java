@@ -23,7 +23,6 @@ import static com.zfoo.protocol.collection.HashMapIntInt.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class HashMapIntShort implements Map<Integer, Short> {
 
@@ -396,6 +395,18 @@ public class HashMapIntShort implements Map<Integer, Short> {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Map<?, ?> m)) {
+            return false;
+        }
+        return m.equals(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
     @Override
     public String toString() {
         if (isEmpty()) {

@@ -12,15 +12,13 @@
 
 package com.zfoo.net.packet.http;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.anno.Protocol;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class HttpHelloRequest implements IPacket {
-
-    public static final short PROTOCOL_ID = 1700;
+@Protocol(id = 1700)
+public class HttpHelloRequest {
 
     private String message;
 
@@ -28,11 +26,6 @@ public class HttpHelloRequest implements IPacket {
         var request = new HttpHelloRequest();
         request.message = message;
         return request;
-    }
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
     }
 
     public String getMessage() {

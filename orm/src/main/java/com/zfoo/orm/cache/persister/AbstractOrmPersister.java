@@ -13,21 +13,20 @@
 
 package com.zfoo.orm.cache.persister;
 
-import com.zfoo.orm.cache.EntityCaches;
-import com.zfoo.orm.model.vo.EntityDef;
+import com.zfoo.orm.cache.EntityCache;
+import com.zfoo.orm.model.EntityDef;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class AbstractOrmPersister implements IOrmPersister {
 
     protected EntityDef entityDef;
 
-    protected EntityCaches<?, ?> entityCaches;
+    protected EntityCache<?, ?> entityCaches;
 
 
-    public AbstractOrmPersister(EntityDef entityDef, EntityCaches<?, ?> entityCaches) {
+    public AbstractOrmPersister(EntityDef entityDef, EntityCache<?, ?> entityCaches) {
         this.entityDef = entityDef;
         this.entityCaches = entityCaches;
     }

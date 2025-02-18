@@ -17,11 +17,10 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class NamespaceHandler extends NamespaceHandlerSupport {
 
-    private final String NET_TAG = "config";
+    private final String NET_TAG = "net";
 
     @Override
     public void init() {

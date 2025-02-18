@@ -15,8 +15,8 @@ package com.zfoo.orm.cache.persister;
 
 import com.zfoo.event.manager.EventBus;
 import com.zfoo.orm.OrmContext;
-import com.zfoo.orm.cache.EntityCaches;
-import com.zfoo.orm.model.vo.EntityDef;
+import com.zfoo.orm.cache.EntityCache;
+import com.zfoo.orm.model.EntityDef;
 import com.zfoo.protocol.exception.ExceptionUtils;
 import com.zfoo.scheduler.manager.SchedulerBus;
 import com.zfoo.scheduler.util.TimeUtils;
@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class CronOrmPersister extends AbstractOrmPersister {
 
@@ -45,7 +44,7 @@ public class CronOrmPersister extends AbstractOrmPersister {
     private final CronExpression cronExpression;
 
 
-    public CronOrmPersister(EntityDef entityDef, EntityCaches<?, ?> entityCaches) {
+    public CronOrmPersister(EntityDef entityDef, EntityCache<?, ?> entityCaches) {
         super(entityDef, entityCaches);
         this.cronExpression = CronExpression.parse(entityDef.getPersisterStrategy().getConfig());
     }
@@ -76,10 +75,8 @@ public class CronOrmPersister extends AbstractOrmPersister {
         if (!OrmContext.isStop()) {
             SchedulerBus.schedule(() -> {
                 if (!OrmContext.isStop()) {
-                    EventBus.execute(entityDef.getClazz().hashCode(), () -> {
-                        entityCaches.persistAll();
-                        schedulePersist();
-                    });
+                    entityCaches.persistAll();
+                    schedulePersist();
                 }
             }, delay, TimeUnit.MILLISECONDS);
         }

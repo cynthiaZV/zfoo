@@ -2,14 +2,14 @@ English | [简体中文](./README_CN.md)
 
 ### Ⅰ. Introduction
 
-- [orm](https://github.com/zfoo-project/zfoo/blob/main/orm/README.md) Based on Mongo DB's orm framework, it provides a
+- [orm](https://github.com/zfoo-project/zfoo/blob/main/orm/README.md) Based on MongoDB's orm framework, it provides a
   mapping between POJO objects and Mongo DB databases
 - MongoDB is a distributed database that can be used on a single machine or distributed in a single machine
-- High-performance database entity object caching based on [caffeine](https://github.com/ben-manes/caffeine)
+- Orm can directly use the MongoDB official driver to operate the database
 
 ### Ⅱ. Use
 
-#### 1. Direct use (low level API), through the low-level API provided by MongoDB to operate the database
+#### 1. Direct use (low level api) to directly operate the database through the api provided by the official MongoDB driver
 
 - Start by getting the Collection through Orm Manager
 
@@ -26,7 +26,7 @@ var collection = OrmContext.getOrmManager().getCollection(UserEntity.class)
 #### 2. Indirect use (middle level API) to access data through the collection's simple wrapper IAccessor and IQuery interfaces
 
 - IAccessor is a data access interface
-  - Inserting data into the database uses the return value of the object's id() method as the primary key
+  - Inserting data into the database uses the field value of the object's field which marked `@Id` as the primary key
   ```
   OrmContext.getAccessor().insert(obj)
   ```
@@ -119,7 +119,6 @@ userEntityCaches.update(entity);
 - Supports basic data properties (byte, short, int, long, float, double, boolean), string String, custom objects, does
   not support generics
 - Arrays support one-dimensional arrays, and collections support List, Set
-- Map type: Mongo DB officially restricts key to String
 - Database primary keys can use integers as much as possible, because Mongo DB's default primary key is a string, which
   takes up space
 - The database uses a self-developed ORM framework, such as an entity class User Entity, which maps to the collection in

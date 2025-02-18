@@ -19,7 +19,6 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ByteSerializer implements ISerializer {
 
@@ -33,6 +32,16 @@ public class ByteSerializer implements ISerializer {
     @Override
     public Object readObject(ByteBuf buffer, IFieldRegistration fieldRegistration) {
         return ByteBufUtils.readByteBox(buffer);
+    }
+
+    @Override
+    public Object defaultValue(IFieldRegistration fieldRegistration) {
+        return Byte.valueOf((byte) 0);
+    }
+
+    @Override
+    public int predictionLength(IFieldRegistration fieldRegistration) {
+        return 1;
     }
 
 }

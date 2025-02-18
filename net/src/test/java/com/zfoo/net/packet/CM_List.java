@@ -13,7 +13,7 @@
 
 package com.zfoo.net.packet;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.anno.Protocol;
 
 import java.util.List;
 import java.util.Map;
@@ -21,11 +21,9 @@ import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class CM_List implements IPacket {
-
-    public static final short PROTOCOL_ID = 1118;
+@Protocol(id = 1118, enhance = false)
+public class CM_List {
 
     private List<Integer> list;
 
@@ -54,15 +52,6 @@ public class CM_List implements IPacket {
 
     public void setList(List<Integer> list) {
         this.list = list;
-    }
-
-    public static short getProtocolId() {
-        return PROTOCOL_ID;
-    }
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
     }
 
     public List<List<Integer>> getListWitList() {

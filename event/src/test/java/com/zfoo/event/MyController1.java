@@ -13,14 +13,13 @@
 
 package com.zfoo.event;
 
-import com.zfoo.event.model.anno.EventReceiver;
+import com.zfoo.event.anno.EventReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Component
 public class MyController1 {

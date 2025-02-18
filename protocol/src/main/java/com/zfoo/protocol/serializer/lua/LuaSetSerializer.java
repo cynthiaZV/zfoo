@@ -26,9 +26,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class LuaSetSerializer implements ILuaSerializer {
+
+    @Override
+    public String fieldDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        return "{}";
+    }
 
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
@@ -48,11 +52,11 @@ public class LuaSetSerializer implements ILuaSerializer {
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("buffer:writeInt(#{})", objectStr)).append(LS);
 
-        String index = "index" + GenerateProtocolFile.index.getAndIncrement();
-        String element = "element" + GenerateProtocolFile.index.getAndIncrement();
+        String index = "index" + GenerateProtocolFile.localVariableId++;
+        String element = "element" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("for {}, {} in pairs({}) do", index, element, objectStr)).append(LS);
-        GenerateLuaUtils.luaSerializer(setField.getSetElementRegistration().serializer())
+        CodeGenerateLua.luaSerializer(setField.getSetElementRegistration().serializer())
                 .writeObject(builder, element, deep + 2, field, setField.getSetElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append("end").append(LS);
@@ -69,20 +73,20 @@ public class LuaSetSerializer implements ILuaSerializer {
         }
 
         SetField setField = (SetField) fieldRegistration;
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("local {} = {}", result)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
-        String size = "size" + GenerateProtocolFile.index.getAndIncrement();
+        String size = "size" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("local {} = buffer:readInt()", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("if {} > 0 then", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep + 1);
-        String i = "index" + GenerateProtocolFile.index.getAndIncrement();
+        String i = "index" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("for {} = 1, {} do", i, size)).append(LS);
-        String readObject = GenerateLuaUtils.luaSerializer(setField.getSetElementRegistration().serializer())
+        String readObject = CodeGenerateLua.luaSerializer(setField.getSetElementRegistration().serializer())
                 .readObject(builder, deep + 2, field, setField.getSetElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 2);
         builder.append(StringUtils.format("table.insert({}, {})", result, readObject)).append(LS);

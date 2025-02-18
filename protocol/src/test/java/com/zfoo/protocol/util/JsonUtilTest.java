@@ -21,7 +21,6 @@ import java.util.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class JsonUtilTest {
 
@@ -112,10 +111,5 @@ public class JsonUtilTest {
         var temp = JsonUtils.string2Object(tripleStr, Triple.class);
     }
 
-    @Test
-    public void prettyPrinterTest() {
-        var user = JsonUtils.string2Object(userJson, User.class);
-        System.out.println(JsonUtils.object2StringPrettyPrinter(user));
-    }
 }
 

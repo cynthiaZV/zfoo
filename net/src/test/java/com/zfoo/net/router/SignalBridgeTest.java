@@ -14,7 +14,7 @@ package com.zfoo.net.router;
 
 import com.zfoo.event.manager.EventBus;
 import com.zfoo.net.router.attachment.SignalAttachment;
-import com.zfoo.net.router.route.SignalBridge;
+import com.zfoo.protocol.util.StringUtils;
 import com.zfoo.scheduler.util.TimeUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,12 +24,11 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Ignore
 public class SignalBridgeTest {
 
-    private final int executorSize = EventBus.EXECUTORS_SIZE;
+    private final int executorSize = Runtime.getRuntime().availableProcessors() * 2;
     private final int count = 100_0000;
     private final int totalIndex = 10;
 
@@ -38,7 +37,7 @@ public class SignalBridgeTest {
         for (int i = 0; i < 10; i++) {
             arrayTest();
         }
-        SignalBridge.status();
+        System.out.println(StringUtils.format("attachment size:[{}]", SignalBridge.signalSize()));
         System.out.println(SignalAttachment.ATOMIC_ID.get());
     }
 
@@ -47,7 +46,7 @@ public class SignalBridgeTest {
 
         var countDownLatch = new CountDownLatch(executorSize);
         for (var i = 0; i < executorSize; i++) {
-            EventBus.execute(i, new Runnable() {
+            EventBus.asyncExecute(i, new Runnable() {
                 @Override
                 public void run() {
                     addAndRemoveArray();

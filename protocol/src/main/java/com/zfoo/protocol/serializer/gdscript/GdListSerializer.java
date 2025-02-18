@@ -26,7 +26,6 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class GdListSerializer implements IGdSerializer {
 
@@ -34,13 +33,13 @@ public class GdListSerializer implements IGdSerializer {
     public String fieldType(Field field, IFieldRegistration fieldRegistration) {
         var listField = (ListField) fieldRegistration;
         var registration = listField.getListElementRegistration();
-        var type = GenerateGdUtils.gdSerializer(registration.serializer()).fieldType(field, registration);
+        var type = CodeGenerateGdScript.gdSerializer(registration.serializer()).fieldType(field, registration);
         return GdArraySerializer.arrayType(type);
     }
 
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
         if (CutDownListSerializer.getInstance().writeObject(builder, objectStr, field, fieldRegistration, CodeLanguage.GdScript)) {
             return;
         }
@@ -48,47 +47,47 @@ public class GdListSerializer implements IGdSerializer {
         ListField listField = (ListField) fieldRegistration;
 
         builder.append(StringUtils.format("if ({} == null):", objectStr)).append(LS);
-        GenerateGdUtils.addTab(builder, deep + 1);
+        GenerateProtocolFile.addTabAscii(builder, deep + 1);
         builder.append("buffer.writeInt(0)").append(LS);
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
 
         builder.append("else:").append(LS);
-        GenerateGdUtils.addTab(builder, deep + 1);
+        GenerateProtocolFile.addTabAscii(builder, deep + 1);
         builder.append(StringUtils.format("buffer.writeInt({}.size())", objectStr)).append(LS);
 
-        String element = "element" + GenerateProtocolFile.index.getAndIncrement();
-        GenerateGdUtils.addTab(builder, deep + 1);
+        String element = "element" + GenerateProtocolFile.localVariableId++;
+        GenerateProtocolFile.addTabAscii(builder, deep + 1);
         builder.append(StringUtils.format("for {} in {}:", element, objectStr)).append(LS);
-        GenerateGdUtils.gdSerializer(listField.getListElementRegistration().serializer())
+        CodeGenerateGdScript.gdSerializer(listField.getListElementRegistration().serializer())
                 .writeObject(builder, element, deep + 2, field, listField.getListElementRegistration());
     }
 
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
         var cutDown = CutDownListSerializer.getInstance().readObject(builder, field, fieldRegistration, CodeLanguage.GdScript);
         if (cutDown != null) {
             return cutDown;
         }
 
         ListField listField = (ListField) fieldRegistration;
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
 
         builder.append(StringUtils.format("var {} = []", result)).append(LS);
 
-        String i = "index" + GenerateProtocolFile.index.getAndIncrement();
-        String size = "size" + GenerateProtocolFile.index.getAndIncrement();
+        String i = "index" + GenerateProtocolFile.localVariableId++;
+        String size = "size" + GenerateProtocolFile.localVariableId++;
 
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
         builder.append(StringUtils.format("var {} = buffer.readInt()", size)).append(LS);
 
-        GenerateGdUtils.addTab(builder, deep);
+        GenerateProtocolFile.addTabAscii(builder, deep);
         builder.append(StringUtils.format("if ({} > 0):", size)).append(LS);
-        GenerateGdUtils.addTab(builder, deep + 1);
+        GenerateProtocolFile.addTabAscii(builder, deep + 1);
         builder.append(StringUtils.format("for {} in range({}):", i, size)).append(LS);
-        String readObject = GenerateGdUtils.gdSerializer(listField.getListElementRegistration().serializer())
+        String readObject = CodeGenerateGdScript.gdSerializer(listField.getListElementRegistration().serializer())
                 .readObject(builder, deep + 2, field, listField.getListElementRegistration());
-        GenerateGdUtils.addTab(builder, deep + 2);
+        GenerateProtocolFile.addTabAscii(builder, deep + 2);
         builder.append(StringUtils.format("{}.append({})", result, readObject)).append(LS);
         return result;
     }

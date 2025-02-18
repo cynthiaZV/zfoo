@@ -12,7 +12,6 @@
 
 package com.zfoo.protocol.collection.lpmap;
 
-import com.zfoo.protocol.IPacket;
 import com.zfoo.protocol.ProtocolManager;
 import com.zfoo.protocol.buffer.ByteBufUtils;
 import com.zfoo.protocol.registration.IProtocolRegistration;
@@ -32,9 +31,8 @@ import java.util.function.BiConsumer;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class FileHeapMap<V extends IPacket> implements LpMap<V> {
+public class FileHeapMap<V> implements LpMap<V> {
 
     private final File dbFile;
 
@@ -111,6 +109,7 @@ public class FileHeapMap<V extends IPacket> implements LpMap<V> {
             var size = ByteBufUtils.readLong(buffer);
             for (var i = 0; i < size; i++) {
                 var key = ByteBufUtils.readLong(buffer);
+                @SuppressWarnings("unchecked")
                 var value = (V) protocolRegistration.read(buffer);
                 put(key, value);
             }

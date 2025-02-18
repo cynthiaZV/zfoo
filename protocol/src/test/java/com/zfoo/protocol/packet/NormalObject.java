@@ -13,7 +13,10 @@
 
 package com.zfoo.protocol.packet;
 
-import com.zfoo.protocol.IPacket;
+
+import com.zfoo.protocol.anno.Compatible;
+import com.zfoo.protocol.anno.Note;
+import com.zfoo.protocol.anno.Protocol;
 
 import java.util.List;
 import java.util.Map;
@@ -21,17 +24,17 @@ import java.util.Set;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class NormalObject implements IPacket {
-
-    public static final transient short PROTOCOL_ID = 101;
+@Note("常规的对象，取所有语言语法的交集，基本上所有语言都支持下面的语法")
+@Protocol(id = 101)
+public class NormalObject {
 
     private byte a;
     private byte[] aaa;
 
     private short b;
 
+    @Note("整数类型")
     private int c;
 
     private long d;
@@ -58,10 +61,13 @@ public class NormalObject implements IPacket {
     private Set<Integer> s;
     private Set<String> ssss;
 
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
-    }
+//    @Compatible(1)
+//    public int outCompatibleValue;
+
+
+
+//    @Compatible(2)
+//    public int outCompatibleValue2;
 
     public byte getA() {
         return a;

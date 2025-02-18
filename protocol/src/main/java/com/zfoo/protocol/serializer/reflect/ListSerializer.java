@@ -19,11 +19,11 @@ import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.registration.field.ListField;
 import io.netty.buffer.ByteBuf;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ListSerializer implements ISerializer {
 
@@ -62,5 +62,17 @@ public class ListSerializer implements ISerializer {
         }
 
         return list;
+    }
+
+    @Override
+    public Object defaultValue(IFieldRegistration fieldRegistration) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public int predictionLength(IFieldRegistration fieldRegistration) {
+        ListField listField = (ListField) fieldRegistration;
+        var length = listField.getListElementRegistration().serializer().predictionLength(listField.getListElementRegistration());
+        return 7 * length;
     }
 }

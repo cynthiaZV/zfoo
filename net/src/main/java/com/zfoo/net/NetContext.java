@@ -20,15 +20,13 @@ import com.zfoo.net.core.AbstractServer;
 import com.zfoo.net.packet.IPacketService;
 import com.zfoo.net.router.IRouter;
 import com.zfoo.net.session.ISessionManager;
-import com.zfoo.net.session.Session;
 import com.zfoo.net.task.TaskBus;
-import com.zfoo.protocol.collection.ArrayUtils;
 import com.zfoo.protocol.exception.ExceptionUtils;
 import com.zfoo.protocol.util.IOUtils;
 import com.zfoo.protocol.util.ReflectionUtils;
+import com.zfoo.protocol.util.ThreadUtils;
 import com.zfoo.scheduler.SchedulerContext;
-import com.zfoo.scheduler.model.StopWatch;
-import com.zfoo.util.ThreadUtils;
+import com.zfoo.scheduler.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -39,12 +37,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class NetContext implements ApplicationListener<ApplicationContextEvent>, Ordered {
 
@@ -134,8 +130,8 @@ public class NetContext implements ApplicationListener<ApplicationContextEvent>,
         configManager.getRegistry().shutdown();
 
         // 先关闭所有session
-        IOUtils.closeIO(ArrayUtils.listToArray(new ArrayList<>(sessionManager.getClientSessionMap().values()), Session.class));
-        IOUtils.closeIO(ArrayUtils.listToArray(new ArrayList<>(sessionManager.getServerSessionMap().values()), Session.class));
+        sessionManager.forEachClientSession(it -> IOUtils.closeIO(it));
+        sessionManager.forEachServerSession(it -> IOUtils.closeIO(it));
 
         // 关闭客户端和服务器
         AbstractClient.shutdown();

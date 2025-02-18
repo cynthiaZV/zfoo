@@ -1,26 +1,5 @@
-{}
-const {} = function({}) {
-    {}
-};
+${protocol_class}
 
-{}.prototype.protocolId = function() {
-    return {};
-};
+${protocol_registration}
 
-{}.write = function(buffer, packet) {
-    if (buffer.writePacketFlag(packet)) {
-        return;
-    }
-    {}
-};
-
-{}.read = function(buffer) {
-    if (!buffer.readBoolean()) {
-        return null;
-    }
-    const packet = new {}();
-    {}
-    return packet;
-};
-
-export default {};
+export default ${protocol_name};

@@ -13,11 +13,8 @@
 
 package com.zfoo.net.handler.codec.json;
 
-import com.zfoo.net.packet.DecodedPacketInfo;
 import com.zfoo.net.packet.EncodedPacketInfo;
-import com.zfoo.protocol.IPacket;
 import com.zfoo.protocol.ProtocolManager;
-import com.zfoo.protocol.buffer.ByteBufUtils;
 import com.zfoo.protocol.util.JsonUtils;
 import com.zfoo.protocol.util.StringUtils;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,32 +26,20 @@ import java.util.List;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class JsonWebSocketCodecHandler extends MessageToMessageCodec<WebSocketFrame, EncodedPacketInfo> {
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, WebSocketFrame webSocketFrame, List<Object> list) {
         var byteBuf = webSocketFrame.content();
-        var bytes = ByteBufUtils.readAllBytes(byteBuf);
-        var jsonStr = StringUtils.bytesToString(bytes);
-        var jsonMap = JsonUtils.getJsonMap(jsonStr);
-        var protocolId = Short.parseShort(jsonMap.get("protocolId"));
-        var packetStr = jsonMap.get("packet");
-        var protocolClass = ProtocolManager.getProtocol(protocolId).protocolConstructor().getDeclaringClass();
-        var packet = JsonUtils.string2Object(packetStr, protocolClass);
-        list.add(DecodedPacketInfo.valueOf((IPacket) packet, null));
+        var decodedPacketInfo = JsonPacket.readDecodedPacketInfo(byteBuf);
+        list.add(decodedPacketInfo);
     }
 
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, EncodedPacketInfo out, List<Object> list) {
         var byteBuf = channelHandlerContext.alloc().ioBuffer();
-
-        var packet = out.getPacket();
-        var jsonPacket = JsonPacket.valueOf(packet.protocolId(), packet);
-        var bytes = StringUtils.bytes(JsonUtils.object2String(jsonPacket));
-        byteBuf.writeBytes(bytes);
-
+        JsonPacket.writeEncodedPacketInfo(byteBuf, out);
         list.add(new BinaryWebSocketFrame(byteBuf));
     }
 

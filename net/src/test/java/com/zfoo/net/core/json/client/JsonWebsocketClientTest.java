@@ -14,24 +14,31 @@
 package com.zfoo.net.core.json.client;
 
 import com.zfoo.net.NetContext;
+import com.zfoo.net.core.HostAndPort;
 import com.zfoo.net.core.json.JsonWebsocketClient;
 import com.zfoo.net.packet.json.JsonHelloRequest;
-import com.zfoo.util.ThreadUtils;
-import com.zfoo.util.net.HostAndPort;
+import com.zfoo.net.packet.json.JsonHelloResponse;
+import com.zfoo.protocol.util.JsonUtils;
+import com.zfoo.protocol.util.ThreadUtils;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolConfig;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.function.Consumer;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Ignore
 public class JsonWebsocketClientTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(JsonWebsocketClientTest.class);
+
     @Test
-    public void startClient() {
+    public void startClient() throws Exception {
         var context = new ClassPathXmlApplicationContext("config.xml");
 
         var webSocketClientProtocolConfig = WebSocketClientProtocolConfig.newBuilder()
@@ -41,12 +48,27 @@ public class JsonWebsocketClientTest {
         var client = new JsonWebsocketClient(HostAndPort.valueOf("127.0.0.1:9000"), webSocketClientProtocolConfig);
         var session = client.start();
 
+        // Websocket在建立tcp连接过后不能立刻通讯，还需要使用Http协议去握手升级成Websocket协议，这里等待一秒让websocket内部协议初始化完毕
+        // WebSocket握手是在客户端和服务器之间建立WebSocket连接的过程。它是通过HTTP/HTTPS协议完成的，后续将升级为WebSocket协议。
+        ThreadUtils.sleep(1000);
+
         var request = new JsonHelloRequest();
         request.setMessage("Hello, this is the json client!");
 
         for (int i = 0; i < 1000; i++) {
-            ThreadUtils.sleep(2000);
             NetContext.getRouter().send(session, request);
+
+            var response = NetContext.getRouter().syncAsk(session, request, JsonHelloResponse.class, null).packet();
+            logger.info("sync json client receive [packet:{}] from server", JsonUtils.object2String(response));
+
+            NetContext.getRouter().asyncAsk(session, request, JsonHelloResponse.class, null)
+                    .whenComplete(new Consumer<JsonHelloResponse>() {
+                        @Override
+                        public void accept(JsonHelloResponse jsonHelloResponse) {
+                            logger.info("async json client receive [packet:{}] from server", JsonUtils.object2String(jsonHelloResponse));
+                        }
+                    });
+            ThreadUtils.sleep(1000);
         }
 
         ThreadUtils.sleep(Long.MAX_VALUE);

@@ -15,7 +15,7 @@ package com.zfoo.net.core.websocket.server;
 import com.zfoo.net.NetContext;
 import com.zfoo.net.packet.websocket.WebsocketHelloRequest;
 import com.zfoo.net.packet.websocket.WebsocketHelloResponse;
-import com.zfoo.net.router.receiver.PacketReceiver;
+import com.zfoo.net.anno.PacketReceiver;
 import com.zfoo.net.session.Session;
 import com.zfoo.protocol.util.JsonUtils;
 import org.slf4j.Logger;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Component
 public class WebsocketServerPacketController {
@@ -36,7 +35,7 @@ public class WebsocketServerPacketController {
         logger.info("receive [packet:{}] from browser", JsonUtils.object2String(request));
 
         var response = new WebsocketHelloResponse();
-        response.setMessage("Hello, this is the websocket server!");
+        response.setMessage("Hello, this is the websocket server! -> " + request.getMessage());
 
         NetContext.getRouter().send(session, response);
     }

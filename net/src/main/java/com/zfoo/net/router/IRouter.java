@@ -15,14 +15,12 @@ package com.zfoo.net.router;
 
 import com.zfoo.net.router.answer.AsyncAnswer;
 import com.zfoo.net.router.answer.SyncAnswer;
-import com.zfoo.net.router.attachment.IAttachment;
 import com.zfoo.net.session.Session;
-import com.zfoo.protocol.IPacket;
+import com.zfoo.net.task.PacketReceiverTask;
 import org.springframework.lang.Nullable;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public interface IRouter {
 
@@ -30,18 +28,18 @@ public interface IRouter {
      * EN:send() and receive() are the entry points for sending and receiving messages, which can be called directly
      * CN:send()和receive()是消息的发送和接收的入口，可以直接调用
      */
-    void send(Session session, IPacket packet);
+    void send(Session session, Object packet);
 
-    void send(Session session, IPacket packet, @Nullable IAttachment attachment);
+    void send(Session session, Object packet, @Nullable Object attachment);
 
-    void receive(Session session, IPacket packet, @Nullable IAttachment attachment);
+    void receive(Session session, Object packet, @Nullable Object attachment);
 
-    void atReceiver(Session session, IPacket packet, @Nullable IAttachment attachment);
+    void atReceiver(PacketReceiverTask packetReceiverTask);
+
+    void registerPacketReceiverDefinition(Object bean);
 
     /**
-     * attention：syncAsk和asyncAsk只能客户端调用
-     * 同一个客户端可以同时发送多条同步或者异步消息。
-     * 服务器对每个请求消息也只能回复一条消息，不能在处理一条不同或者异步消息的时候回复多条消息。
+     * 服务器对每个syncAsk和asyncAsk请求消息也只能回复一条消息，不能在处理一条不同或者异步消息的时候回复多条消息。
      *
      * @param session     一个网络通信的会话
      * @param packet      一个网络通信包，消息体
@@ -56,8 +54,12 @@ public interface IRouter {
      * @return 服务器返回的消息Response
      * @throws Exception 如果超时或者其它异常
      */
-    <T extends IPacket> SyncAnswer<T> syncAsk(Session session, IPacket packet, @Nullable Class<T> answerClass, @Nullable Object argument) throws Exception;
+    <T> SyncAnswer<T> syncAsk(Session session, Object packet, @Nullable Class<T> answerClass, @Nullable Object argument) throws Exception;
 
-    <T extends IPacket> AsyncAnswer<T> asyncAsk(Session session, IPacket packet, @Nullable Class<T> answerClass, @Nullable Object argument);
+    <T> SyncAnswer<T> syncAsk(Session session, Object packet, @Nullable Class<T> answerClass, @Nullable Object argument, long timeoutMillis) throws Exception;
+
+    <T> AsyncAnswer<T> asyncAsk(Session session, Object packet, @Nullable Class<T> answerClass, @Nullable Object argument);
+
+    <T> AsyncAnswer<T> asyncAsk(Session session, Object packet, @Nullable Class<T> answerClass, @Nullable Object argument, long timeoutMillis);
 
 }

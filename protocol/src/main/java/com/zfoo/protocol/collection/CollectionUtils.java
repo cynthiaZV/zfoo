@@ -13,9 +13,6 @@
 package com.zfoo.protocol.collection;
 
 
-import com.zfoo.protocol.collection.model.NaturalComparator;
-import com.zfoo.protocol.model.Pair;
-import com.zfoo.protocol.util.AssertionUtils;
 import com.zfoo.protocol.util.IOUtils;
 import com.zfoo.protocol.util.StringUtils;
 
@@ -23,7 +20,6 @@ import java.util.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class CollectionUtils {
 
@@ -87,7 +83,7 @@ public abstract class CollectionUtils {
     }
 
     public static <T> List<T> newList(int size) {
-        return size <= 0 ? new ArrayList<>() : new ArrayList<>(comfortableLength(size));
+        return size <= 0 ? new ArrayList<>() : new ArrayList<>(comfortableObjectLength(size));
     }
 
     public static <T> Set<T> newSet(int size) {
@@ -99,23 +95,77 @@ public abstract class CollectionUtils {
     }
 
     /**
-     * 数组初始化长度的安全上限限制，防止反序列化异常导致内存突然升高
+     * EN: The safety limit of the array initialization length prevents deserialization exceptions from causing a sudden increase in memory
+     * CN: 数组初始化长度的安全上限限制，防止反序列化异常导致内存突然升高
      */
-    public static int comfortableLength(int length) {
-        if (length >= IOUtils.BYTES_PER_MB) {
-            throw new ArrayStoreException(StringUtils.format("新建数组的长度[{}]超过设置的安全范围[{}]", length, IOUtils.BYTES_PER_MB));
+    public static final long MAX_BYTE_LENGTH_ARRAY = 64 * IOUtils.BYTES_PER_MB;
+    public static final long MAX_LENGTH_SHORT_ARRAY = IOUtils.BYTES_PER_MB / 2;
+    public static final long MAX_LENGTH_INT_ARRAY = IOUtils.BYTES_PER_MB / 4;
+    public static final long MAX_LENGTH_LONG_ARRAY = IOUtils.BYTES_PER_MB / 8;
+    public static final long MAX_LENGTH_OBJECT_ARRAY = IOUtils.BYTES_PER_MB / 16;
+    public static final long MAX_SIZE_MAP = IOUtils.BYTES_PER_MB / 32;
+
+    public static int comfortableByteLength(int length) {
+        if (length >= MAX_BYTE_LENGTH_ARRAY) {
+            throw new ArrayStoreException(StringUtils.format("The length of the newly created array [{}] exceeds the safety range [{}]"
+                    , length, MAX_BYTE_LENGTH_ARRAY));
+        }
+        return length;
+    }
+
+    public static int comfortableShortLength(int length) {
+        if (length >= MAX_LENGTH_SHORT_ARRAY) {
+            throw new ArrayStoreException(StringUtils.format("The length of the newly created array [{}] exceeds the safety range [{}]"
+                    , length, MAX_LENGTH_SHORT_ARRAY));
+        }
+        return length;
+    }
+
+    public static int comfortableIntLength(int length) {
+        if (length >= MAX_LENGTH_INT_ARRAY) {
+            throw new ArrayStoreException(StringUtils.format("The length of the newly created array [{}] exceeds the safety range [{}]"
+                    , length, MAX_LENGTH_INT_ARRAY));
+        }
+        return length;
+    }
+
+    public static int comfortableLongLength(int length) {
+        if (length >= MAX_LENGTH_LONG_ARRAY) {
+            throw new ArrayStoreException(StringUtils.format("The length of the newly created array [{}] exceeds the safety range [{}]"
+                    , length, MAX_LENGTH_LONG_ARRAY));
+        }
+        return length;
+    }
+
+    public static int comfortableObjectLength(int length) {
+        if (length >= MAX_LENGTH_OBJECT_ARRAY) {
+            throw new ArrayStoreException(StringUtils.format("The length of the newly created array [{}] exceeds the safety range [{}]"
+                    , length, MAX_LENGTH_OBJECT_ARRAY));
         }
         return length;
     }
 
     /**
-     * 计算List和HashMap初始化合适的大小，为了安全必须给初始化的集合一个最大上限，防止反序列化一个不合法的包导致内存突然升高
+     * EN: Calculate the appropriate size for HashMap initialization. For safety, a maximum limit must be given
+     * to the initialized collection to prevent deserialization of an illegal package from causing a sudden increase in memory.
+     * <p>
+     * CN: 计算HashMap初始化合适的大小，为了安全必须给初始化的集合一个最大上限，防止反序列化一个不合法的包导致内存突然升高
      */
     public static int comfortableCapacity(int capacity) {
-        return capacity < 16
-                ? (capacity < 8 ? 16 : 32)
-                : (capacity < 32 ? 64 : Math.min(capacity << 1, IOUtils.BYTES_PER_MB));
+        if (capacity >= MAX_SIZE_MAP) {
+            throw new ArrayStoreException(StringUtils.format("The length of the newly created map [{}] exceeds the safety range [{}]"
+                    , capacity, MAX_SIZE_MAP));
+        }
+        return capacity;
     }
+
+    public static int capacity(int expectedSize) {
+        if (expectedSize < 3) {
+            return expectedSize + 1;
+        }
+        return (int) ((float) expectedSize / 0.75F + 1.0F);
+    }
+
 
     // ----------------------------------归并排序----------------------------------
 
@@ -131,11 +181,11 @@ public abstract class CollectionUtils {
      * @return a new sorted List, containing the elements of Collection a and b
      */
     public static <T extends Comparable<? super T>> List<T> collate(List<? extends T> aList, List<? extends T> bList) {
-        return collate(aList, bList, NaturalComparator.getInstance(), true);
+        return collate(aList, bList, Comparator.naturalOrder(), true);
     }
 
     public static <T extends Comparable<? super T>> List<T> collate(List<? extends T> aList, List<? extends T> bList, boolean includeDuplicates) {
-        return collate(aList, bList, NaturalComparator.getInstance(), includeDuplicates);
+        return collate(aList, bList, Comparator.naturalOrder(), includeDuplicates);
     }
 
     public static <T> List<T> collate(List<T> aList, List<T> bList, Comparator<T> comparator) {
@@ -234,53 +284,6 @@ public abstract class CollectionUtils {
         return mergedList;
     }
 
-
-    /**
-     * list合并
-     *
-     * @param exclusive 元素是否是独占的，也就是说是否可以重复
-     * @param pairs     需要被合并的pairs集合，第一个参数是步数，第二个参数是集合
-     * @return 返回合并后的list
-     */
-    public static <T> List<T> listJoinList(boolean exclusive, Pair<Integer, List<T>>... pairs) {
-        return listJoinList(exclusive, List.of(pairs));
-    }
-
-    public static <T> List<T> listJoinList(boolean exclusive, List<Pair<Integer, List<T>>> pairs) {
-        var iteratorList = new ArrayList<List<T>>();
-        var iteratorMap = new HashMap<List<T>, Iterator<T>>();
-        var stepMap = new HashMap<List<T>, Integer>();
-        for (var pair : pairs) {
-            var step = pair.getKey();
-            var list = pair.getValue();
-            AssertionUtils.ge1(step);
-            if (isNotEmpty(list)) {
-                var iterator = list.iterator();
-                iteratorList.add(list);
-                iteratorMap.put(list, iterator);
-                stepMap.put(list, step);
-            }
-        }
-
-        var result = new ArrayList<T>();
-
-        while (iteratorMap.values().stream().anyMatch(it -> it.hasNext())) {
-            for (var list : iteratorList) {
-                var iterator = iteratorMap.get(list);
-                var step = stepMap.get(list);
-                for (var i = 0; i < step && iterator.hasNext(); i++) {
-                    var element = iterator.next();
-                    if (exclusive && result.contains(element)) {
-                        i--;
-                        continue;
-                    }
-                    result.add(element);
-                }
-            }
-        }
-
-        return result;
-    }
 
     /**
      * 获取集合的最后几个元素

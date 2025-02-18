@@ -17,7 +17,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ConcurrentArrayList<E> implements List<E> {
 
@@ -49,6 +48,7 @@ public class ConcurrentArrayList<E> implements List<E> {
     public List<E> clearAndReturn() {
         lock.lock();
         try {
+            @SuppressWarnings("unchecked")
             var newList = (ArrayList<E>) list.clone();
             list.clear();
             return newList;
@@ -71,6 +71,7 @@ public class ConcurrentArrayList<E> implements List<E> {
     public Iterator<E> iterator() {
         lock.lock();
         try {
+            @SuppressWarnings("unchecked")
             var newList = (ArrayList<E>) list.clone();
             return newList.iterator();
         } finally {
@@ -237,6 +238,7 @@ public class ConcurrentArrayList<E> implements List<E> {
     public ListIterator<E> listIterator() {
         lock.lock();
         try {
+            @SuppressWarnings("unchecked")
             var newList = (ArrayList<E>) list.clone();
             return newList.listIterator();
         } finally {
@@ -248,6 +250,7 @@ public class ConcurrentArrayList<E> implements List<E> {
     public ListIterator<E> listIterator(int index) {
         lock.lock();
         try {
+            @SuppressWarnings("unchecked")
             var newList = (ArrayList<E>) list.clone();
             return newList.listIterator(index);
         } finally {
@@ -267,15 +270,10 @@ public class ConcurrentArrayList<E> implements List<E> {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null) {
+        if (!(o instanceof List<?> l)) {
             return false;
         }
-
-        if (this != o) {
-            return false;
-        }
-
-        return list.equals(o);
+        return l.equals(this);
     }
 
     @Override

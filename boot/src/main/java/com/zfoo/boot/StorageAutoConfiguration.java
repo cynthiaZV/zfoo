@@ -12,20 +12,22 @@
 
 package com.zfoo.boot;
 
+import com.zfoo.boot.graalvm.GraalvmStorageHints;
 import com.zfoo.storage.StorageContext;
+import com.zfoo.storage.config.StorageConfig;
 import com.zfoo.storage.manager.StorageManager;
-import com.zfoo.storage.model.config.StorageConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnBean(StorageConfig.class)
+@ImportRuntimeHints(GraalvmStorageHints.class)
 public class StorageAutoConfiguration {
 
     @Bean

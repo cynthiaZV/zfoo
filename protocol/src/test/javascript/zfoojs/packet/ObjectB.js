@@ -1,27 +1,43 @@
-// @author godotg
-// @version 3.0
-const ObjectB = function(flag) {
-    this.flag = flag; // boolean
+
+const ObjectB = function() {
+    this.flag = false; // boolean
+    this.innerCompatibleValue = 0; // number
 };
 
+ObjectB.PROTOCOL_ID = 103;
+
 ObjectB.prototype.protocolId = function() {
-    return 103;
+    return ObjectB.PROTOCOL_ID;
 };
 
 ObjectB.write = function(buffer, packet) {
-    if (buffer.writePacketFlag(packet)) {
+    if (packet === null) {
+        buffer.writeInt(0);
         return;
     }
-    buffer.writeBoolean(packet.flag);
+    const beforeWriteIndex = buffer.getWriteOffset();
+    buffer.writeInt(4);
+    buffer.writeBool(packet.flag);
+    buffer.writeInt(packet.innerCompatibleValue);
+    buffer.adjustPadding(4, beforeWriteIndex);
 };
 
 ObjectB.read = function(buffer) {
-    if (!buffer.readBoolean()) {
+    const length = buffer.readInt();
+    if (length === 0) {
         return null;
     }
+    const beforeReadIndex = buffer.getReadOffset();
     const packet = new ObjectB();
-    const result0 = buffer.readBoolean(); 
+    const result0 = buffer.readBool(); 
     packet.flag = result0;
+    if (buffer.compatibleRead(beforeReadIndex, length)) {
+        const result1 = buffer.readInt();
+        packet.innerCompatibleValue = result1;
+    }
+    if (length > 0) {
+        buffer.setReadOffset(beforeReadIndex + length);
+    }
     return packet;
 };
 

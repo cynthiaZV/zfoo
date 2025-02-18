@@ -12,73 +12,46 @@
 
 package com.zfoo.net.packet;
 
-import com.zfoo.net.router.attachment.IAttachment;
-import com.zfoo.protocol.IPacket;
 import org.springframework.lang.Nullable;
 
 /**
  * 被解码后的Packet的信息
  *
  * @author godotg
- * @version 3.0
  */
 public class EncodedPacketInfo {
 
     /**
      * 解码后的包
      */
-    private IPacket packet;
+    private Object packet;
 
     /**
      * 解码后的包的附加包
      */
-    private IAttachment attachment;
+    private Object attachment;
 
-    /**
-     * 长度
-     */
-    private int length;
-    /**
-     * 加密所用时间
-     */
-    private long encodedTime;
 
-    public static EncodedPacketInfo valueOf(IPacket packet, @Nullable IAttachment attachment) {
+    public static EncodedPacketInfo valueOf(Object packet, @Nullable Object attachment) {
         EncodedPacketInfo packetInfo = new EncodedPacketInfo();
         packetInfo.packet = packet;
         packetInfo.attachment = attachment;
         return packetInfo;
     }
 
-    public IPacket getPacket() {
+    public Object getPacket() {
         return packet;
     }
 
-    public void setPacket(IPacket packet) {
+    public void setPacket(Object packet) {
         this.packet = packet;
     }
 
-    public IAttachment getAttachment() {
+    public Object getAttachment() {
         return attachment;
     }
 
-    public void setAttachment(IAttachment attachment) {
+    public void setAttachment(Object attachment) {
         this.attachment = attachment;
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
-    }
-
-    public long getEncodedTime() {
-        return encodedTime;
-    }
-
-    public void setEncodedTime(long encodedTime) {
-        this.encodedTime = encodedTime;
     }
 }

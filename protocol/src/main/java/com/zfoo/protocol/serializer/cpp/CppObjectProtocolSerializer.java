@@ -13,7 +13,7 @@
 
 package com.zfoo.protocol.serializer.cpp;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.ProtocolManager;
 import com.zfoo.protocol.generate.GenerateProtocolFile;
 import com.zfoo.protocol.model.Pair;
 import com.zfoo.protocol.registration.field.IFieldRegistration;
@@ -28,27 +28,26 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class CppObjectProtocolSerializer implements ICppSerializer {
 
     @Override
-    public Pair<String, String> field(Field field, IFieldRegistration fieldRegistration) {
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
         ObjectProtocolField objectProtocolField = (ObjectProtocolField) fieldRegistration;
         var protocolSimpleName = EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(objectProtocolField.getProtocolId());
         var type = StringUtils.format("{}", protocolSimpleName);
-        return new Pair<>(type, field.getName());
+        return new Pair<>(type, "null");
     }
 
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
         ObjectProtocolField objectProtocolField = (ObjectProtocolField) fieldRegistration;
         GenerateProtocolFile.addTab(builder, deep);
-        if (IPacket.class.isAssignableFrom(field.getType())) {
+        if (ProtocolManager.isProtocolClass(field.getType())) {
             builder.append(StringUtils.format("buffer.writePacket({}, {});", objectStr, objectProtocolField.getProtocolId()))
                     .append(LS);
         } else {
-            builder.append(StringUtils.format("buffer.writePacket((IPacket *) &{}, {});", objectStr, objectProtocolField.getProtocolId()))
+            builder.append(StringUtils.format("buffer.writePacket((IProtocol *) &{}, {});", objectStr, objectProtocolField.getProtocolId()))
                     .append(LS);
         }
     }
@@ -56,8 +55,8 @@ public class CppObjectProtocolSerializer implements ICppSerializer {
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
         ObjectProtocolField objectProtocolField = (ObjectProtocolField) fieldRegistration;
-        String uniquePtr = "result" + GenerateProtocolFile.index.getAndIncrement();
-        String ptr = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String uniquePtr = "result" + GenerateProtocolFile.localVariableId++;
+        String ptr = "result" + GenerateProtocolFile.localVariableId++;
 
         var protocolSimpleName = EnhanceObjectProtocolSerializer.getProtocolClassSimpleName(objectProtocolField.getProtocolId());
 

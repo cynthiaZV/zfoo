@@ -1,57 +1,12 @@
-#ifndef ZFOO_{}_H
-#define ZFOO_{}_H
+#ifndef ZFOO_${protocol_name}
+#define ZFOO_${protocol_name}
 
-#include "{}/ByteBuffer.h"
-{}
+#include "${protocol_root_path}/ByteBuffer.h"
+${protocol_imports}
 namespace zfoo {
+    ${protocol_class}
 
-    {}
-    class {} : public IPacket {
-    public:
-        {}
-
-        ~{}() override = default;
-
-        static {} valueOf({}) {
-            auto packet = {}();
-            {}
-            return packet;
-        }
-
-        int16_t protocolId() override {
-            return {};
-        }
-
-        bool operator<(const {} &_) const {
-            {}
-            return false;
-        }
-    };
-
-
-    class {}Registration : public IProtocolRegistration {
-    public:
-        int16_t protocolId() override {
-            return {};
-        }
-
-        void write(ByteBuffer &buffer, IPacket *packet) override {
-            if (buffer.writePacketFlag(packet)) {
-                return;
-            }
-            auto *message = ({} *) packet;
-            {}
-        }
-
-        IPacket *read(ByteBuffer &buffer) override {
-            auto *packet = new {}();
-            if (!buffer.readBool()) {
-                return packet;
-            }
-            {}
-            return packet;
-        }
-    };
+    ${protocol_registration}
 }
 
 #endif

@@ -15,7 +15,7 @@ package com.zfoo.net.core.tcp.server;
 import com.zfoo.net.NetContext;
 import com.zfoo.net.packet.tcp.TcpHelloRequest;
 import com.zfoo.net.packet.tcp.TcpHelloResponse;
-import com.zfoo.net.router.receiver.PacketReceiver;
+import com.zfoo.net.anno.PacketReceiver;
 import com.zfoo.net.session.Session;
 import com.zfoo.protocol.util.JsonUtils;
 import org.slf4j.Logger;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Component
 public class TcpServerController {
@@ -36,7 +35,7 @@ public class TcpServerController {
         logger.info("receive [packet:{}] from client", JsonUtils.object2String(request));
 
         var response = new TcpHelloResponse();
-        response.setMessage("Hello, this is the tcp server!");
+        response.setMessage("Hello, this is the tcp server! -> " + request.getMessage());
 
         NetContext.getRouter().send(session, response);
     }

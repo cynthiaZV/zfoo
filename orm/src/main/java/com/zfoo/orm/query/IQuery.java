@@ -13,16 +13,15 @@
 
 package com.zfoo.orm.query;
 
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.model.IEntity;
 
 /**
  * 对数据库进行（查找）的相关方法
  *
  * @author godotg
- * @version 3.0
  */
 public interface IQuery {
 
-    <E extends IEntity<?>> IQueryBuilder<E> builder(Class<E> entityClazz);
+    <PK extends Comparable<PK>, E extends IEntity<PK>> IQueryBuilder<PK, E> builder(Class<E> entityClazz);
 
 }

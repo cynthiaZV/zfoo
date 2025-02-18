@@ -20,23 +20,16 @@ import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class RegistryConfig {
 
     private String center;
+    private String path;
     private String user;
     private String password;
     private Map<String, String> address;
+    private String driverClassName;
 
-    public static RegistryConfig valueOf(String center, String user, String password, Map<String, String> addressMap) {
-        RegistryConfig config = new RegistryConfig();
-        config.center = center;
-        config.user = user;
-        config.password = password;
-        config.address = addressMap;
-        return config;
-    }
 
     public boolean hasZookeeperAuthor() {
         return !(StringUtils.isBlank(user) || StringUtils.isBlank(password));
@@ -52,6 +45,14 @@ public class RegistryConfig {
 
     public void setCenter(String center) {
         this.center = center;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getUser() {
@@ -88,13 +89,23 @@ public class RegistryConfig {
         }
         RegistryConfig that = (RegistryConfig) o;
         return Objects.equals(center, that.center) &&
+                Objects.equals(path, that.path) &&
                 Objects.equals(user, that.user) &&
                 Objects.equals(password, that.password) &&
+                Objects.equals(driverClassName, that.driverClassName) &&
                 Objects.equals(address, that.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(center, user, password, address);
+        return Objects.hash(center, user, password, address, path, driverClassName);
+    }
+
+    public String getDriverClassName() {
+        return driverClassName;
+    }
+
+    public void setDriverClassName(String driverClassName) {
+        this.driverClassName = driverClassName;
     }
 }

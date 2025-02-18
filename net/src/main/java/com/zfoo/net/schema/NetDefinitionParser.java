@@ -33,7 +33,6 @@ import org.w3c.dom.Element;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class NetDefinitionParser implements BeanDefinitionParser {
 
@@ -102,18 +101,12 @@ public class NetDefinitionParser implements BeanDefinitionParser {
         // 协议protocol.xml文件的位置。 注意：直接写protocol.xml 则是从resources目录下读
         resolvePlaceholder("protocol-location", "protocolLocation", builder, element, parserContext);
 
-        // 各种语言的文件是否生成
-        resolvePlaceholder("javascript-protocol", "javascriptProtocol", builder, element, parserContext);
-        resolvePlaceholder("typescript-protocol", "typescriptProtocol", builder, element, parserContext);
-        resolvePlaceholder("csharp-protocol", "csharpProtocol", builder, element, parserContext);
-        resolvePlaceholder("lua-protocol", "luaProtocol", builder, element, parserContext);
-        resolvePlaceholder("gdscript-protocol", "gdscriptProtocol", builder, element, parserContext);
-        resolvePlaceholder("cpp-protocol", "cppProtocol", builder, element, parserContext);
-        resolvePlaceholder("go-protocol", "goProtocol", builder, element, parserContext);
-        resolvePlaceholder("protobuf-protocol", "protobufProtocol", builder, element, parserContext);
-
+        // 协议文件是否生成在同一个协议文件中
+        resolvePlaceholder("merge-protocol", "mergeProtocol", builder, element, parserContext);
         // 文件是否折叠
         resolvePlaceholder("fold-protocol", "foldProtocol", builder, element, parserContext);
+        // 生成各种语言的协议列表
+        resolvePlaceholder("code-languages", "codeLanguages", builder, element, parserContext);
 
         resolvePlaceholder("protocol-path", "protocolPath", builder, element, parserContext);
 
@@ -156,8 +149,10 @@ public class NetDefinitionParser implements BeanDefinitionParser {
         var builder = BeanDefinitionBuilder.rootBeanDefinition(clazz);
 
         resolvePlaceholder("center", "center", builder, element, parserContext);
+        resolvePlaceholder("path", "path", builder, element, parserContext);
         resolvePlaceholder("user", "user", builder, element, parserContext);
         resolvePlaceholder("password", "password", builder, element, parserContext);
+        resolvePlaceholder("driver-class-name", "driverClassName", builder, element, parserContext);
         var addressMap = parseAddress(element, parserContext);
         builder.addPropertyValue("address", addressMap);
         parserContext.getRegistry().registerBeanDefinition(clazz.getCanonicalName(), builder.getBeanDefinition());
@@ -225,7 +220,6 @@ public class NetDefinitionParser implements BeanDefinitionParser {
             var clazz = ConsumerModule.class;
             var builder = BeanDefinitionBuilder.rootBeanDefinition(clazz);
 
-            builder.addConstructorArgValue(environment.resolvePlaceholders(addressElement.getAttribute("protocol-module")));
             builder.addConstructorArgValue(environment.resolvePlaceholders(addressElement.getAttribute("load-balancer")));
             builder.addConstructorArgValue(environment.resolvePlaceholders(addressElement.getAttribute("consumer")));
 

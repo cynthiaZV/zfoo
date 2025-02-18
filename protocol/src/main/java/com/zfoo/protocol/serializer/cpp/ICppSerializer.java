@@ -20,14 +20,13 @@ import java.lang.reflect.Field;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public interface ICppSerializer {
 
     /**
-     * 获取属性的类型和名称
+     * 获取属性的类型和默认值
      */
-    Pair<String, String> field(Field field, IFieldRegistration fieldRegistration);
+    Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration);
 
     void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration);
 

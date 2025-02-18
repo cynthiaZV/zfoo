@@ -1,3 +1,52 @@
+#### 注意
+
+- The main branch is a development version for Java 21 and GraalVM. The stable version is [zfoo-java-11-17](https://github.com/zfoo-project/zfoo/tree/zfoo-java-11-17)
+- Upgrade process
+  - reimport not found classes
+  - no need to inherit IPacket anymore
+  - SafeRunnable has been deleted, please use ThreadUtils.safeRunnable()
+  - rename interfaces and annotations，Storage -> IStorage，@Resource -> @Storage，@ResInjection -> @StorageAutowired
+  - rename interfaces and annotations，@EntityCachesInjection -> @EntityCacheAutowired，@EntityCaches -> @EntityCache
+
+```
+- 主干main是当前是面向java 21和GraalVM的开发版本，稳定版本请使用 [zfoo-java-11-17](https://github.com/zfoo-project/zfoo/tree/zfoo-java-11-17)
+- 升级流程
+    - 重新导入找不到的类
+    - 不需要再继承IPacket
+    - SafeRunnable删除了，请使用ThreadUtils.safeRunnable()
+    - 重命名接口和注解，Storage -> IStorage，@Resource -> @Storage，@ResInjection -> @StorageAutowired
+    - 重命名接口和注解，@EntityCachesInjection -> @EntityCacheAutowired，@EntityCaches -> @EntityCache
+```
+
+#### 为什么部署的时候才用main，平时开发的时候从test启动
+
+- 可以很好的隔离部署环境和开发测试环境
+- 可以加上-Dspring.profiles.active=dev就可以从main启动
+- 部署的时候从main启动（没有控制台日志），平时开发的时候从test启动（有控制台日志）
+- 这样正式环境的配置放在main的resources里，测试环境的配置放在test的resources里，互不干扰
+- 从test下启动的程序的配置文件会覆盖main中的配置文件
+
+---
+
+#### logback为什么在main和test都有一份日志配置，为什么弄了两份日志配置
+
+- 隔离生产环境配置和测试环境的日志配置
+- test的配置会覆盖main中的配置
+- main中没有控制台日志，test中只有控制台日志，控制台日志会加锁在生产环境会导致性能问题
+
+---
+
+#### 为什么没有发布到maven仓库
+
+- 项目非常轻量，容易修改，游戏场景很多都需要自己定制，打算java 21出来才会发布release版本
+- zfoo安装很简单，maven install到本地就可以使用了，或者直接将zfoo源代码集成在在项目里当作一个module使用
+- 没有用maven的<dependencyManagement>来管理这个root，是为了让下面的module不依赖于任何parent，复制出来就可以用
+- 本地开发调试也可以直接用idea的add maven project当作一个第三方库使用
+
+![Image text](image/idea/maven-pom.png)
+
+---
+
 #### 为什么选择 Java 11 而不是 Java 8
 
 - var可以减少非常多的代码，使代码更加简介
@@ -37,7 +86,7 @@ SignalAttachment的signalId就是用于RPC的同步和异步的信号，通过�
 
 #### zfoo的RPC协议格式为什么没有dubbo复杂
 
-- duboo没有自己实现的比较好的协议所以要支持其它协议，zfoo有自己实现的协议已经最快，只需要专注自己的协议和protobuf，兼容就比较简单
+- duboo没有自己实现的比较好的协议所以要支持其它协议，zfoo有自己实现的协议已经极快了，只需要专注自己的协议和protobuf，兼容就比较简单
 - zfoo作为rpc协议是，length | packet | attachment，当作普通服务器协议就是，length | packet
 - attachment能装很多东西，算是协议上的多态，就不需要dubbo那么复杂的设计了
 
@@ -57,24 +106,11 @@ SignalAttachment的signalId就是用于RPC的同步和异步的信号，通过�
 
 ---
 
-#### 为什么部署的时候才用main，平时开发的时候从test启动
+#### orm为什么不选择Spring的官方驱动SpringData mongodb
 
-- 可以很好的隔离部署环境和开发测试环境
-- 可以加上-Dspring.profiles.active=dev就可以从main启动
-- 部署的时候从main启动（没有控制台日志），平时开发的时候从test启动（有控制台日志）
-- 这样正式环境的配置放在main的resources里，测试环境的配置放在test的resources里，互不干扰
-- 从test下启动的程序的配置文件会覆盖main中的配置文件
-
----
-
-#### 为什么没有发布到maven仓库
-
-- 项目非常轻量，容易修改，游戏场景很多都需要自己定制，打算java 21出来才会发布release版本
-- zfoo安装很简单，maven install到本地就可以使用了，或者直接将zfoo源代码集成在在项目里当作一个module使用
-- 没有用maven的<dependencyManagement>来管理这个root，是为了让下面的module不依赖于任何parent，复制出来就可以用
-- 本地开发调试也可以直接用idea的add maven project当作一个第三方库使用
-
-![Image text](image/idea/maven-pom.png)
+- SpringData mongodb 里面会生成一个class字段，比较占内存，而且你移动class类的时候体验不友好，不知道现在版本改了没有
+- mongodb的官方驱动轻量，mongodb的官方驱动基本上什么功能都有，SpringData mongodb这个封装太重了
+- zfoo的orm接近0封装，简单的封装可以极大提高上层的自由度
 
 ---
 
@@ -87,19 +123,10 @@ SignalAttachment的signalId就是用于RPC的同步和异步的信号，通过�
 
 ---
 
+#### 手摸手的视频教程可以帮助新手起步
 
-#### orm为什么不选择Spring的官方驱动SpringData mongodb
-
-- SpringData mongodb 里面会生成一个class字段，比较占内存，而且你移动class类的时候体验不友好，不知道现在版本改了没有
-- mongodb的官方驱动轻量，mongodb的官方驱动基本上什么功能都有，SpringData mongodb这个封装太重了
-- zfoo的orm接近0封装，简单的封装可以极大提高上层的自由度
+- 新手起步困难的话，直接看手把手的[zfoo 框架视频教程](./doc/video-tutorial.md)，新手友好，先从简单的基础使用开始，然后再深入到底层核心代码运行
 
 ---
 
-#### logback为什么在main和test都有一份日志配置，为什么弄了两份日志配置
 
-- 隔离生产环境配置和测试环境的日志配置
-- test的配置会覆盖main中的配置
-- main中没有控制台日志，test中只有控制台日志，控制台日志会加锁在生产环境会导致性能问题
-
----

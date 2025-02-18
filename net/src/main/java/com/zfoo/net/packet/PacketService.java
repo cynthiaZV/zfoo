@@ -13,30 +13,33 @@
 package com.zfoo.net.packet;
 
 import com.zfoo.net.NetContext;
-import com.zfoo.net.router.attachment.IAttachment;
-import com.zfoo.net.router.route.PacketBus;
-import com.zfoo.protocol.IPacket;
+import com.zfoo.net.router.attachment.SignalAttachment;
 import com.zfoo.protocol.ProtocolManager;
 import com.zfoo.protocol.buffer.ByteBufUtils;
+import com.zfoo.protocol.collection.CollectionUtils;
 import com.zfoo.protocol.exception.ExceptionUtils;
 import com.zfoo.protocol.generate.GenerateOperation;
 import com.zfoo.protocol.generate.GenerateProtocolFile;
 import com.zfoo.protocol.registration.IProtocolRegistration;
 import com.zfoo.protocol.serializer.CodeLanguage;
 import com.zfoo.protocol.util.DomUtils;
+import com.zfoo.protocol.util.NumberUtils;
+import com.zfoo.protocol.util.StringUtils;
 import com.zfoo.protocol.xml.XmlProtocols;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class PacketService implements IPacketService {
 
@@ -53,6 +56,7 @@ public class PacketService implements IPacketService {
      * 2. 服务器内部请求约定以Ask结尾，服务器内部的响应约定以Answer结尾
      * 3. 服务器主动通知客户端以Notice结尾
      * 4. 公共的协议放在common模块
+     * 5. 内部协议范围不允许使用
      */
     public static final String NET_REQUEST_SUFFIX = "Request";
     public static final String NET_RESPONSE_SUFFIX = "Response";
@@ -65,11 +69,16 @@ public class PacketService implements IPacketService {
 
     public static final String NET_COMMON_MODULE = "common";
 
-    private final Predicate<IProtocolRegistration> netGenerateProtocolFilter = registration
-            -> ProtocolManager.moduleByModuleId(registration.module()).getName().matches(NET_COMMON_MODULE)
-            || registration.protocolConstructor().getDeclaringClass().getSimpleName().endsWith(NET_REQUEST_SUFFIX)
-            || registration.protocolConstructor().getDeclaringClass().getSimpleName().endsWith(NET_RESPONSE_SUFFIX)
-            || registration.protocolConstructor().getDeclaringClass().getSimpleName().endsWith(NET_NOTICE_SUFFIX);
+    private final Predicate<IProtocolRegistration> netGenerateProtocolFilter = it -> {
+        var clazz = it.protocolConstructor().getDeclaringClass();
+        var className = clazz.getSimpleName();
+        var module = ProtocolManager.moduleByModuleId(it.module());
+        return clazz == SignalAttachment.class
+                || className.endsWith(NET_REQUEST_SUFFIX)
+                || className.endsWith(NET_RESPONSE_SUFFIX)
+                || className.endsWith(NET_NOTICE_SUFFIX)
+                || module.getName().matches(NET_COMMON_MODULE);
+    };
 
     public PacketService() {
 
@@ -83,34 +92,19 @@ public class PacketService implements IPacketService {
         var protocolLocation = netConfig.getProtocolLocation();
 
         var generateOperation = new GenerateOperation();
+        generateOperation.setMergeProtocol(netConfig.isMergeProtocol());
         generateOperation.setFoldProtocol(netConfig.isFoldProtocol());
         generateOperation.setProtocolPath(netConfig.getProtocolPath());
         generateOperation.setProtocolParam(netConfig.getProtocolParam());
-        if (netConfig.isJavascriptProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.JavaScript);
-        }
-        if (netConfig.isTypescriptProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.TypeScript);
-        }
-        if (netConfig.isCsharpProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.CSharp);
-        }
-        if (netConfig.isLuaProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.Lua);
-        }
-        if (netConfig.isGdscriptProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.GdScript);
-        }
-        if (netConfig.isCppProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.Cpp);
-        }
-        if (netConfig.isGoProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.Go);
-        }
-        if (netConfig.isProtobufProtocol()) {
-            generateOperation.getGenerateLanguages().add(CodeLanguage.Protobuf);
-        }
+        var codeLanguageArr = StringUtils.tokenize(netConfig.getCodeLanguages(), ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 
+        for (var codeLanguage : codeLanguageArr) {
+            var codeLanguageSet = getProtocolList(codeLanguage);
+            if (CollectionUtils.isEmpty(codeLanguageSet)) {
+                continue;
+            }
+            generateOperation.getGenerateLanguages().addAll(codeLanguageSet);
+        }
         // 设置生成协议的过滤器
         GenerateProtocolFile.generateProtocolFilter = netGenerateProtocolFilter;
 
@@ -125,10 +119,30 @@ public class PacketService implements IPacketService {
         }
 
         // 注册协议接收器
-        var componentBeans =  applicationContext.getBeansWithAnnotation(Component.class);
+        var componentBeans = applicationContext.getBeansWithAnnotation(Component.class);
         for (var bean : componentBeans.values()) {
-            PacketBus.registerPacketReceiverDefinition(bean);
+            NetContext.getRouter().registerPacketReceiverDefinition(bean);
         }
+    }
+
+    /**
+     * 获取要生成协议列表
+     */
+    private Set<CodeLanguage> getProtocolList(String codeLanguage) {
+        var languageSet = new HashSet<CodeLanguage>();
+        var isNumeric = NumberUtils.isNumeric(codeLanguage);
+        for (var language : CodeLanguage.values()) {
+            if (isNumeric) {
+                var code = Integer.valueOf(codeLanguage);
+                if ((code & language.id) != 0) {
+                    languageSet.add(language);
+                }
+            } else if (language.name().equalsIgnoreCase(codeLanguage)) {
+                languageSet.add(language);
+                break;
+            }
+        }
+        return languageSet;
     }
 
     @Override
@@ -138,42 +152,43 @@ public class PacketService implements IPacketService {
         // 解析包体
         var packet = ProtocolManager.read(buffer);
         // 解析包的附加包
-        var hasAttachment = ByteBufUtils.tryReadBoolean(buffer);
-        var attachment = hasAttachment ? ((IAttachment) ProtocolManager.read(buffer)) : null;
+        var hasAttachment = ByteBufUtils.tryReadBool(buffer);
+        var attachment = hasAttachment ? (ProtocolManager.read(buffer)) : null;
         return DecodedPacketInfo.valueOf(packet, attachment);
     }
 
     @Override
-    public void write(ByteBuf buffer, IPacket packet, IAttachment attachment) {
+    public void write(ByteBuf buffer, Object packet, Object attachment) {
+        try {
+            // 预留写入包的长度，一个int字节大小
+            buffer.ensureWritable(7);
+            buffer.writerIndex(PACKET_HEAD_LENGTH);
 
-        if (packet == null) {
-            logger.error("packet is null and can not be sent.");
-            return;
-        }
+            // 写入包packet
+            ProtocolManager.write(buffer, packet);
 
-        // 预留写入包的长度，一个int字节大小
-        buffer.writeInt(PACKET_HEAD_LENGTH);
-
-        // 写入包packet
-        ProtocolManager.write(buffer, packet);
-
-        // 写入包的附加包attachment
-        if (attachment == null) {
-            ByteBufUtils.writeBoolean(buffer, false);
-        } else {
-            ByteBufUtils.writeBoolean(buffer, true);
             // 写入包的附加包attachment
-            ProtocolManager.write(buffer, attachment);
+            if (attachment == null) {
+                ByteBufUtils.writeBool(buffer, false);
+            } else {
+                ByteBufUtils.writeBool(buffer, true);
+                // 写入包的附加包attachment
+                ProtocolManager.write(buffer, attachment);
+            }
+
+            int length = buffer.writerIndex();
+
+            int packetLength = length - PACKET_HEAD_LENGTH;
+
+            buffer.writerIndex(0);
+
+            buffer.writeInt(packetLength);
+
+            buffer.writerIndex(length);
+        } catch (Exception e) {
+            logger.error("write packet exception", e);
+        } catch (Throwable t) {
+            logger.error("write packet error", t);
         }
-
-        int length = buffer.readableBytes();
-
-        int packetLength = length - PACKET_HEAD_LENGTH;
-
-        buffer.writerIndex(0);
-
-        buffer.writeInt(packetLength);
-
-        buffer.writerIndex(length);
     }
 }

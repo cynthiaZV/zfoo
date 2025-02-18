@@ -13,39 +13,36 @@
 
 package com.zfoo.protocol.generate;
 
+import com.zfoo.protocol.anno.Note;
 import com.zfoo.protocol.exception.RunException;
 import com.zfoo.protocol.model.Pair;
-import com.zfoo.protocol.registration.IProtocolRegistration;
 import com.zfoo.protocol.registration.ProtocolRegistration;
-import com.zfoo.protocol.registration.anno.Note;
-import com.zfoo.protocol.registration.anno.Protocol;
 import com.zfoo.protocol.serializer.CodeLanguage;
 import com.zfoo.protocol.util.AssertionUtils;
+import com.zfoo.protocol.util.FileUtils;
 import com.zfoo.protocol.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * 生成协议的时候，协议的文档注释和字段注释会使用这个类
+ * EN: When generating the protocol, the document comments and field comments of the protocol will use this class
+ * CN: 生成协议的时候，协议的文档注释和字段注释会使用这个类
  *
  * @author godotg
- * @version 3.0
  */
 public abstract class GenerateProtocolNote {
 
     // 临时变量，启动完成就会销毁，协议的文档，外层map的key为协议类；pair的key为总的注释，value为属性字段的注释，value表示的map的key为属性名称
     // 比如在Test中的ComplexObject生成的pari是如下格式
     /**
-     * key docTitle:
+     * key is docTitle note:
      * // 复杂的对象
      * // 包括了各种复杂的结构，数组，List，Set，Map
      * //
      * // @author godotg
      * // @version 1.0
      * <p>
-     * value aa:
+     * value is field note:
      * // byte的包装类型
      * // 优先使用基础类型，包装类型会有装箱拆箱
      */
@@ -57,77 +54,76 @@ public abstract class GenerateProtocolNote {
         protocolNoteMap = null;
     }
 
-    public static String classNote(short protocolId, CodeLanguage language) {
+    public static String protocol_note(short protocolId, CodeLanguage codeLanguage) {
         var protocolNote = protocolNoteMap.get(protocolId);
         var classNote = protocolNote.getKey();
         if (StringUtils.isBlank(classNote)) {
             return StringUtils.EMPTY;
         }
-
-        switch (language) {
-            case Cpp:
-            case Go:
-            case JavaScript:
-            case TypeScript:
-            case CSharp:
-            case Protobuf:
-                classNote = StringUtils.format("// {}", classNote);
-                break;
-            case Lua:
-                classNote = StringUtils.format("-- {}", classNote);
-                break;
-            case GdScript:
-                classNote = StringUtils.format("# {}", classNote);
-                break;
-            case Enhance:
-            default:
-                throw new RunException("无法识别的枚举类型[{}]", language);
-        }
-        return classNote;
+        return formatNote(codeLanguage, classNote);
     }
 
-    public static String fieldNote(short protocolId, String fieldName, CodeLanguage language) {
+    public static List<String> fieldNotes(short protocolId, String fieldName, CodeLanguage language) {
         var protocolNote = protocolNoteMap.get(protocolId);
         var fieldNoteMap = protocolNote.getValue();
         var fieldNote = fieldNoteMap.get(fieldName);
         if (StringUtils.isBlank(fieldNote)) {
-            return StringUtils.EMPTY;
+            return Collections.emptyList();
         }
+        var multipleLineNotes = fieldNote.split(FileUtils.LS_REGEX);
+        var notes = new ArrayList<String>();
+        for(var oneLineNote : multipleLineNotes) {
+            var formatFieldNote = formatNote(language, oneLineNote);
+            notes.add(formatFieldNote);
+        }
+        return notes;
+    }
+
+    private static String formatNote(CodeLanguage language, String note) {
         switch (language) {
             case Cpp:
-            case Go:
+            case Rust:
+            case Java:
+            case Kotlin:
+            case Scala:
+            case Golang:
             case JavaScript:
+            case EcmaScript:
             case TypeScript:
             case CSharp:
+            case Php:
+            case Dart:
+            case Swift:
             case Protobuf:
-                fieldNote = StringUtils.format("// {}", fieldNote);
+                note = StringUtils.format("// {}", note);
                 break;
             case Lua:
-                fieldNote = StringUtils.format("-- {}", fieldNote);
+                note = StringUtils.format("-- {}", note);
                 break;
+            case Python:
             case GdScript:
-                fieldNote = StringUtils.format("# {}", fieldNote);
+            case Ruby:
+                note = StringUtils.format("# {}", note);
                 break;
             case Enhance:
             default:
-                throw new RunException("无法识别的枚举类型[{}]", language);
+                throw new RunException("unrecognized enum type [{}]", language);
         }
-        return fieldNote;
+        return note;
     }
 
-    public static void initProtocolNote(List<IProtocolRegistration> protocolRegistrations) {
-        AssertionUtils.notNull(protocolNoteMap, "[{}]已经初始完成，初始化完成过后不能调用initProtocolDocument", GenerateProtocolNote.class.getSimpleName());
+    public static void initProtocolNote(List<ProtocolRegistration> protocolRegistrations) {
+        AssertionUtils.notNull(protocolNoteMap, "[{}] duplicate initialization", GenerateProtocolNote.class.getSimpleName());
 
-        for (var protocolRegistration : protocolRegistrations) {
-            var protocolClazz = protocolRegistration.protocolConstructor().getDeclaringClass();
+        for (var registration : protocolRegistrations) {
+            var protocolClazz = registration.protocolConstructor().getDeclaringClass();
             var classNote = StringUtils.EMPTY;
-            var protocolClass = protocolClazz.getDeclaredAnnotation(Protocol.class);
-            if (protocolClass != null && StringUtils.isNotEmpty(protocolClass.note())) {
-                classNote = StringUtils.trim(protocolClass.note());
+            var protocolClass = protocolClazz.getDeclaredAnnotation(Note.class);
+            if (protocolClass != null && StringUtils.isNotEmpty(protocolClass.value())) {
+                classNote = StringUtils.trim(protocolClass.value());
             }
 
             var fieldNoteMap = new HashMap<String, String>();
-            var registration = (ProtocolRegistration) protocolRegistration;
             for (var field : registration.getFields()) {
                 var noteDescription = field.getDeclaredAnnotation(Note.class);
                 if (noteDescription == null || StringUtils.isEmpty(noteDescription.value())) {
@@ -138,7 +134,7 @@ public abstract class GenerateProtocolNote {
                 fieldNoteMap.put(fieldName, StringUtils.trim(fieldNote));
             }
 
-            protocolNoteMap.put(protocolRegistration.protocolId(), new Pair<>(classNote, fieldNoteMap));
+            protocolNoteMap.put(registration.protocolId(), new Pair<>(classNote, fieldNoteMap));
         }
     }
 

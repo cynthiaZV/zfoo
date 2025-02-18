@@ -1,33 +1,5 @@
-{}
-local {} = {}
+${protocol_class}
 
-function {}:new({})
-    local obj = {
-        {}
-    }
-    setmetatable(obj, self)
-    self.__index = self
-    return obj
-end
+${protocol_registration}
 
-function {}:protocolId()
-    return {}
-end
-
-function {}:write(buffer, packet)
-    if buffer:writePacketFlag(packet) then
-        return
-    end
-    {}
-end
-
-function {}:read(buffer)
-    if not(buffer:readBoolean()) then
-        return nil
-    end
-    local packet = {}:new()
-    {}
-    return packet
-end
-
-return {}
+return ${protocol_name}

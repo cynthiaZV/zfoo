@@ -13,9 +13,9 @@
 package com.zfoo.net.core.udp;
 
 import com.zfoo.net.core.AbstractServer;
+import com.zfoo.net.core.HostAndPort;
 import com.zfoo.net.handler.ServerRouteHandler;
 import com.zfoo.net.handler.codec.udp.UdpCodecHandler;
-import com.zfoo.util.net.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class UdpServer extends AbstractServer<Channel> {
     private static final Logger logger = LoggerFactory.getLogger(UdpServer.class);

@@ -14,12 +14,12 @@
 package com.zfoo.net.core.tcpAsync.client;
 
 import com.zfoo.net.NetContext;
+import com.zfoo.net.core.HostAndPort;
 import com.zfoo.net.core.tcp.TcpClient;
 import com.zfoo.net.packet.tcp.AsyncMessAnswer;
 import com.zfoo.net.packet.tcp.AsyncMessAsk;
 import com.zfoo.protocol.util.JsonUtils;
-import com.zfoo.util.ThreadUtils;
-import com.zfoo.util.net.HostAndPort;
+import com.zfoo.protocol.util.ThreadUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,7 +28,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Ignore
 public class TcpClientTest {

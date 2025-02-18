@@ -4,11 +4,11 @@
 
 - [orm](https://github.com/zfoo-project/zfoo/blob/main/orm/README.md) 基于MongoDB的orm框架，提供POJO对象和MongoDB数据库之间的映射
 - mongodb是分布式数据库，可以单机使用，也可以分布式使用
-- 基于 [caffeine](https://github.com/ben-manes/caffeine) 的高性能数据库实体对象Entity缓存
+- 对MongoDB官方驱动进行了简易封装，可以直接获取最接近官方原生的使用方式
 
 ### Ⅱ. 使用
 
-#### 1. 直接使用(low level api)，通过MongoDB官方提供的底层Api操作数据库
+#### 1. 直接使用(low level api)，通过MongoDB官方驱动提供的Api直接操作数据库
 
 - 首先通过OrmManager获取Collection
 
@@ -25,7 +25,7 @@ var collection = OrmContext.getOrmManager().getCollection(UserEntity.class)
 #### 2. 间接使用(middle level api)，通过collection的简易包装类IAccessor和IQuery接口访问数据
 
 - IAccessor接口，为数据访问接口
-  - 插入数据到数据库，会以对象的id()方法的返回值作为主键
+  - 插入数据到数据库，会以对象class的@Id字段的值作为主键
   ```
   OrmContext.getAccessor().insert(obj)
   ```
@@ -113,7 +113,6 @@ userEntityCaches.update(entity);
 - 如果不想映射某属性，直接加上transient关键字
 - 支持基本数据属性（byte，short，int，long，float，double，boolean），字符串String，自定义对象，不支持泛型
 - 数组支持一维数组，集合支持List，Set
-- Map类型MongoDB官方限定了key只能为String
 - 数据库主键能用整数尽量用整数，因为MongoDB默认的主键是一个字符串，比较占空间
 - 数据库使用自研的orm框架，比如一个实体类UserEntity，映射到数据库中的集合为user，首字母小写，去掉Entity
 - 智能语法分析，不支持泛型和循环引用的对象，错误的entity对象定义将无法启动程序并给出错误警告

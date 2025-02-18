@@ -14,10 +14,12 @@
 package com.zfoo.protocol.serializer.javascript;
 
 import com.zfoo.protocol.generate.GenerateProtocolFile;
+import com.zfoo.protocol.model.Pair;
 import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.registration.field.SetField;
 import com.zfoo.protocol.serializer.CodeLanguage;
 import com.zfoo.protocol.serializer.CutDownSetSerializer;
+import com.zfoo.protocol.serializer.typescript.CodeGenerateTypeScript;
 import com.zfoo.protocol.util.StringUtils;
 
 import java.lang.reflect.Field;
@@ -26,9 +28,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class JsSetSerializer implements IJsSerializer {
+    @Override
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        return new Pair<>(CodeGenerateTypeScript.toTsClassName(field.getGenericType().toString()), "new Set()");
+    }
+
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
         GenerateProtocolFile.addTab(builder, deep);
@@ -48,10 +54,10 @@ public class JsSetSerializer implements IJsSerializer {
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("buffer.writeInt({}.size);", objectStr)).append(LS);
 
-        String element = "element" + GenerateProtocolFile.index.getAndIncrement();
+        String element = "element" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("{}.forEach({} => {", objectStr, element)).append(LS);
-        GenerateJsUtils.jsSerializer(setField.getSetElementRegistration().serializer())
+        CodeGenerateJavaScript.jsSerializer(setField.getSetElementRegistration().serializer())
                 .writeObject(builder, element, deep + 2, field, setField.getSetElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append("});").append(LS);
@@ -68,21 +74,21 @@ public class JsSetSerializer implements IJsSerializer {
         }
 
         SetField setField = (SetField) fieldRegistration;
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
 
         builder.append(StringUtils.format("const {} = new Set();", result)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
-        String size = "size" + GenerateProtocolFile.index.getAndIncrement();
+        String size = "size" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("const {} = buffer.readInt();", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("if ({} > 0) {", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep + 1);
-        String i = "index" + GenerateProtocolFile.index.getAndIncrement();
+        String i = "index" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("for (let {} = 0; {} < {}; {}++) {", i, i, size, i)).append(LS);
-        String readObject = GenerateJsUtils.jsSerializer(setField.getSetElementRegistration().serializer())
+        String readObject = CodeGenerateJavaScript.jsSerializer(setField.getSetElementRegistration().serializer())
                 .readObject(builder, deep + 2, field, setField.getSetElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 2);
         builder.append(StringUtils.format("{}.add({});", result, readObject)).append(LS);

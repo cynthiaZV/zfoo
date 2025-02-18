@@ -12,22 +12,15 @@
 
 package com.zfoo.net.packet.tcp;
 
-import com.zfoo.protocol.IPacket;
+import com.zfoo.protocol.anno.Protocol;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class SyncMessAsk implements IPacket {
-
-    public static final short PROTOCOL_ID = 1150;
+@Protocol(id = 1150)
+public class SyncMessAsk {
 
     private String message;
-
-    @Override
-    public short protocolId() {
-        return PROTOCOL_ID;
-    }
 
     public String getMessage() {
         return message;

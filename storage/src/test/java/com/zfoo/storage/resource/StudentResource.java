@@ -13,18 +13,18 @@
 
 package com.zfoo.storage.resource;
 
-import com.zfoo.storage.model.anno.ExcelFieldName;
-import com.zfoo.storage.model.anno.Id;
-import com.zfoo.storage.model.anno.Index;
-import com.zfoo.storage.model.anno.Resource;
+import com.zfoo.storage.anno.AliasFieldName;
+import com.zfoo.storage.anno.Id;
+import com.zfoo.storage.anno.Index;
+import com.zfoo.storage.anno.Storage;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author godotg
- * @version 4.0
  */
-@Resource
+@Storage
 public class StudentResource {
 
     @Id
@@ -35,11 +35,14 @@ public class StudentResource {
      */
     @Index
     private String name;
-
-    @ExcelFieldName("年龄")
+    @Index
+    @AliasFieldName("年龄")
     private int age;
     private float score;
     private String[] courses;
+    private int[] intArray;
+    private List<Integer> intList;
+    private Set<Integer> intSet;
     private User[] users;
     private List<User> userList;
     private User user;
@@ -66,6 +69,18 @@ public class StudentResource {
 
     public String[] getCourses() {
         return courses;
+    }
+
+    public int[] getIntArray() {
+        return intArray;
+    }
+
+    public List<Integer> getIntList() {
+        return intList;
+    }
+
+    public Set<Integer> getIntSet() {
+        return intSet;
     }
 
     public User[] getUsers() {

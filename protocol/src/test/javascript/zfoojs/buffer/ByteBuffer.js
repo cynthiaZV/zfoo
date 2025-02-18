@@ -20,6 +20,10 @@ const decoder = new TextDecoder('utf-8');
 // const encoder = new util.TextEncoder('utf-8');
 // const decoder = new util.TextDecoder('utf-8');
 
+// 现在所有主流浏览器都支持TextDecoder，只有微信小程序不支持TextDecoder（微信浏览器也支持，微信的小程序和浏览器不是同一个js环境）
+// https://developers.weixin.qq.com/community/develop/doc/000ca85023ce78c8484e0d1d256400
+// 如果在微信小程序中使用，需要按照上面的链接全局引入TextEncoder相关依赖
+
 // 在js中long可以支持的最大值
 // const maxLong = 9007199254740992;
 // const minLong = -9007199254740992;
@@ -49,22 +53,69 @@ const ByteBuffer = function() {
     this.buffer = new ArrayBuffer(initSize);
     this.bufferView = new DataView(this.buffer, 0, this.buffer.byteLength);
 
-    this.setWriteOffset = function(writeOffset) {
-        if (writeOffset > this.buffer.byteLength) {
-            throw new Error('index out of bounds exception: readerIndex: ' + this.readOffset +
-            ', writerIndex: ' + this.writeOffset +
-            '(expected: 0 <= readerIndex <= writerIndex <= capacity:' + this.buffer.byteLength);
+    this.adjustPadding = function(predictionLength, beforeWriteIndex) {
+        const currentWriteIndex = this.writeOffset;
+        const predictionCount = this.writeIntCount(predictionLength);
+        const length = currentWriteIndex - beforeWriteIndex - predictionCount;
+        const lengthCount = this.writeIntCount(length);
+        const padding = lengthCount - predictionCount;
+        if (padding === 0) {
+            this.setWriteOffset(beforeWriteIndex);
+            this.writeInt(length);
+            this.setWriteOffset(currentWriteIndex);
+        } else {
+            const retainedByteBuf = this.buffer.slice(currentWriteIndex - length, currentWriteIndex);
+            this.setWriteOffset(beforeWriteIndex);
+            this.writeInt(length);
+            this.writeBytes(retainedByteBuf);
         }
-        this.writeOffset = writeOffset;
+    }
+
+    this.compatibleRead = function(beforeReadIndex, length) {
+        return length !== -1 && this.getReadOffset() < length + beforeReadIndex;
+    }
+
+    this.getBuffer = function() {
+        return this.buffer;
     };
 
-    this.setReadOffset = function(readOffset) {
-        if (readOffset > this.writeOffset) {
-            throw new Error('index out of bounds exception: readerIndex: ' + this.readOffset +
-                ', writerIndex: ' + this.writeOffset +
-                '(expected: 0 <= readerIndex <= writerIndex <= capacity:' + this.buffer.byteLength);
+    this.writeBytes = function(byteArray) {
+        const length = byteArray.byteLength;
+        this.ensureCapacity(length);
+        new Uint8Array(this.buffer).set(new Uint8Array(byteArray), this.writeOffset);
+        this.writeOffset += length;
+    };
+
+    this.toBytes = function() {
+        const result = new ArrayBuffer(this.writeOffset);
+        new Uint8Array(result).set(new Uint8Array(this.buffer.slice(0, this.writeOffset)));
+        return result;
+    };
+
+    this.getWriteOffset = function() {
+        return this.writeOffset;
+    }
+
+    this.setWriteOffset = function(writeIndex) {
+        if (writeIndex > this.buffer.byteLength) {
+            throw new Error('writeIndex out of bounds exception: readOffset: ' + this.readOffset +
+            ', writeOffset: ' + this.writeOffset +
+            '(expected: 0 <= readOffset <= writeOffset <= capacity:' + this.buffer.byteLength  + ')');
         }
-        this.readOffset = readOffset;
+        this.writeOffset = writeIndex;
+    };
+
+    this.getReadOffset = function() {
+        return this.readOffset;
+    }
+
+    this.setReadOffset = function(readIndex) {
+        if (readIndex > this.writeOffset) {
+            throw new Error('readIndex out of bounds exception: readOffset: ' + this.readOffset +
+                ', writeOffset: ' + this.writeOffset +
+                '(expected: 0 <= readOffset <= writeOffset <= capacity:' + this.buffer.byteLength) + ')';
+        }
+        this.readOffset = readIndex;
     };
 
     this.getCapacity = function() {
@@ -86,7 +137,7 @@ const ByteBuffer = function() {
         return this.writeOffset > this.readOffset;
     };
 
-    this.writeBoolean = function(value) {
+    this.writeBool = function(value) {
         if (!(value === true || value === false)) {
             throw new Error('value must be true of false');
         }
@@ -99,23 +150,10 @@ const ByteBuffer = function() {
         this.writeOffset++;
     };
 
-    this.readBoolean = function() {
+    this.readBool = function() {
         const value = this.bufferView.getInt8(this.readOffset);
         this.readOffset++;
         return (value === 1);
-    };
-
-    this.writeBytes = function(byteArray) {
-        const length = byteArray.byteLength;
-        this.ensureCapacity(length);
-        new Uint8Array(this.buffer).set(new Uint8Array(byteArray), this.writeOffset);
-        this.writeOffset += length;
-    };
-
-    this.toBytes = function() {
-        const result = new ArrayBuffer(this.writeOffset);
-        new Uint8Array(result).set(new Uint8Array(this.buffer.slice(0, this.writeOffset)));
-        return result;
     };
 
     this.writeByte = function(value) {
@@ -201,6 +239,26 @@ const ByteBuffer = function() {
         this.writeByte(value >>> 28);
     };
 
+    this.writeIntCount = function(value) {
+        if (!(minInt <= value && value <= maxInt)) {
+            throw new Error('value must range between minInt:-2147483648 and maxInt:2147483647');
+        }
+        value = encodeZigzagInt(value);
+        if (value >>> 7 === 0) {
+            return 1;
+        }
+        if (value >>> 14 === 0) {
+            return 2;
+        }
+        if (value >>> 21 === 0) {
+            return 3;
+        }
+        if (value >>> 28 === 0) {
+            return 4;
+        }
+        return 5;
+    }
+
     this.readInt = function() {
         let b = this.readByte();
         let value = b & 0x7F;
@@ -272,7 +330,7 @@ const ByteBuffer = function() {
                 }
             }
         }
-        return readInt64(new Uint8Array(buffer.slice(0, count))).toString();
+        return readInt64(new Uint8Array(buffer.slice(0, count))).toNumber();
     };
 
     this.writeFloat = function(value) {
@@ -305,18 +363,6 @@ const ByteBuffer = function() {
         return value;
     };
 
-    this.writeChar = function(value) {
-        if (value === null || value === undefined || value.length === 0) {
-            this.writeString(empty_str);
-            return;
-        }
-        this.writeString(value.charAt(0));
-    };
-
-    this.readChar = function() {
-        return this.readString();
-    };
-
     this.writeString = function(value) {
         if (value === null || value === undefined || value.trim().length === 0) {
             this.writeInt(0);
@@ -344,7 +390,7 @@ const ByteBuffer = function() {
 
     this.writePacketFlag = function(value) {
         const flag = (value === null) || (value === undefined);
-        this.writeBoolean(!flag);
+        this.writeBool(!flag);
         return flag;
     };
 
@@ -358,23 +404,23 @@ const ByteBuffer = function() {
         return protocolRegistration.read(this);
     };
 
-    this.writeBooleanArray = function(array) {
+    this.writeBoolArray = function(array) {
         if (array === null) {
             this.writeInt(0);
         } else {
             this.writeInt(array.length);
             array.forEach(element => {
-                this.writeBoolean(element);
+                this.writeBool(element);
             });
         }
     };
 
-    this.readBooleanArray = function() {
+    this.readBoolArray = function() {
         const array = [];
         const length = this.readInt();
         if (length > 0) {
             for (let index = 0; index < length; index++) {
-                array.push(this.readBoolean());
+                array.push(this.readBool());
             }
         }
         return array;
@@ -534,28 +580,6 @@ const ByteBuffer = function() {
         return array;
     };
 
-    this.writeCharArray = function(array) {
-        if (array === null) {
-            this.writeInt(0);
-        } else {
-            this.writeInt(array.length);
-            array.forEach(element => {
-                this.writeChar(element);
-            });
-        }
-    };
-
-    this.readCharArray = function() {
-        const array = [];
-        const length = this.readInt();
-        if (length > 0) {
-            for (let index = 0; index < length; index++) {
-                array.push(this.readChar());
-            }
-        }
-        return array;
-    };
-
     this.writePacketArray = function(array, protocolId) {
         if (array === null) {
             this.writeInt(0);
@@ -581,12 +605,12 @@ const ByteBuffer = function() {
     };
 
     // ---------------------------------------------list-------------------------------------------
-    this.writeBooleanList = function(list) {
-        this.writeBooleanArray(list);
+    this.writeBoolList = function(list) {
+        this.writeBoolArray(list);
     };
 
-    this.readBooleanList = function() {
-        return this.readBooleanArray();
+    this.readBoolList = function() {
+        return this.readBoolArray();
     };
 
     this.writeByteList = function(list) {
@@ -645,14 +669,6 @@ const ByteBuffer = function() {
         return this.readStringArray();
     };
 
-    this.writeCharList = function(list) {
-        this.writeCharArray(list);
-    };
-
-    this.readCharList = function() {
-        return this.readCharArray();
-    };
-
     this.writePacketList = function(list, protocolId) {
         this.writePacketArray(list, protocolId);
     };
@@ -662,19 +678,19 @@ const ByteBuffer = function() {
     };
 
     // ---------------------------------------------set-------------------------------------------
-    this.writeBooleanSet = function(set) {
+    this.writeBoolSet = function(set) {
         if (set === null) {
             this.writeInt(0);
         } else {
             this.writeInt(set.size);
             set.forEach(element => {
-                this.writeBoolean(element);
+                this.writeBool(element);
             });
         }
     };
 
-    this.readBooleanSet = function() {
-        return new Set(this.readBooleanArray());
+    this.readBoolSet = function() {
+        return new Set(this.readBoolArray());
     };
 
     this.writeByteSet = function(set) {
@@ -723,8 +739,8 @@ const ByteBuffer = function() {
     };
 
     this.writeLongSet = function(set) {
-        if (array === null) {
-            set.writeInt(0);
+        if (set === null) {
+            this.writeInt(0);
         } else {
             this.writeInt(set.size);
             set.forEach(element => {
@@ -780,21 +796,6 @@ const ByteBuffer = function() {
 
     this.readStringSet = function() {
         return new Set(this.readStringArray());
-    };
-
-    this.writeCharSet = function(set) {
-        if (set === null) {
-            this.writeInt(0);
-        } else {
-            this.writeInt(set.size);
-            set.forEach(element => {
-                this.writeChar(element);
-            });
-        }
-    };
-
-    this.readCharSet = function() {
-        return new Set(this.readCharArray());
     };
 
     this.writePacketSet = function(set, protocolId) {

@@ -12,23 +12,20 @@
 
 package com.zfoo.net.core.event;
 
-import com.zfoo.event.model.event.IEvent;
-import com.zfoo.net.router.attachment.IAttachment;
+import com.zfoo.event.model.IEvent;
 import com.zfoo.net.session.Session;
-import com.zfoo.protocol.IPacket;
 
 /**
  * @author meiw
- * @version 3.0
  */
 public class ServerExceptionEvent implements IEvent {
 
     private Session session;
-    private IPacket packet;
-    private IAttachment attachment;
+    private Object packet;
+    private Object attachment;
     private Exception exception;
 
-    public static ServerExceptionEvent valueOf(Session session, IPacket packet, IAttachment attachment, Exception exception) {
+    public static ServerExceptionEvent valueOf(Session session, Object packet, Object attachment, Exception exception) {
         var event = new ServerExceptionEvent();
         event.session = session;
         event.packet = packet;
@@ -45,19 +42,19 @@ public class ServerExceptionEvent implements IEvent {
         this.session = session;
     }
 
-    public IPacket getPacket() {
+    public Object getPacket() {
         return packet;
     }
 
-    public void setPacket(IPacket packet) {
+    public void setPacket(Object packet) {
         this.packet = packet;
     }
 
-    public IAttachment getAttachment() {
+    public Object getAttachment() {
         return attachment;
     }
 
-    public void setAttachment(IAttachment attachment) {
+    public void setAttachment(Object attachment) {
         this.attachment = attachment;
     }
 

@@ -12,12 +12,11 @@
 
 package com.zfoo.net.core.event;
 
-import com.zfoo.event.model.event.IEvent;
+import com.zfoo.event.model.IEvent;
 import com.zfoo.net.session.Session;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ServerSessionInactiveEvent implements IEvent {
 

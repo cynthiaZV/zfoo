@@ -18,8 +18,7 @@ import com.zfoo.net.handler.BaseRouteHandler;
 import com.zfoo.net.session.Session;
 import com.zfoo.protocol.exception.ExceptionUtils;
 import com.zfoo.protocol.util.IOUtils;
-import com.zfoo.util.ThreadUtils;
-import com.zfoo.util.net.HostAndPort;
+import com.zfoo.protocol.util.ThreadUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public abstract class AbstractClient<C extends Channel> extends ChannelInitializer<C> implements IClient {
 

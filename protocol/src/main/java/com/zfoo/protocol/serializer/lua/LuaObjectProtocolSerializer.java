@@ -23,9 +23,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class LuaObjectProtocolSerializer implements ILuaSerializer {
+
+    @Override
+    public String fieldDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        return "nil";
+    }
 
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
@@ -37,7 +41,7 @@ public class LuaObjectProtocolSerializer implements ILuaSerializer {
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
         ObjectProtocolField objectProtocolField = (ObjectProtocolField) fieldRegistration;
-        var result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        var result = "result" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("local {} = buffer:readPacket({})", result, objectProtocolField.getProtocolId())).append(LS);
         return result;

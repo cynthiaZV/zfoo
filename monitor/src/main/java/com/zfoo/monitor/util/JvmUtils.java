@@ -1,6 +1,6 @@
 package com.zfoo.monitor.util;
 
-import com.zfoo.monitor.model.JvmMemory;
+import com.zfoo.monitor.JvmMemory;
 
 import java.lang.management.*;
 import java.util.ArrayList;
@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * @author yh
- * @date 2022/10/10 下午6:42
  */
 public class JvmUtils {
 

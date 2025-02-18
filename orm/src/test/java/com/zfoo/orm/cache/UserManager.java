@@ -13,18 +13,31 @@
 
 package com.zfoo.orm.cache;
 
+import com.zfoo.orm.anno.EntityCacheAutowired;
 import com.zfoo.orm.entity.UserEntity;
-import com.zfoo.orm.model.anno.EntityCachesInjection;
+import com.zfoo.orm.entity.wrapper.*;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Component
 public class UserManager {
 
-    @EntityCachesInjection
-    public IEntityCaches<Long, UserEntity> userEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<Long, UserEntity> userEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<Integer, IntEntity> intEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<Long, LongEntity> longEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<Float, FloatEntity> floatEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<Double, DoubleEntity> doubleEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<String, StringEntity> stringEntityCaches;
+    @EntityCacheAutowired
+    public IEntityCache<ObjectId, ObjectIdEntity> objectIdEntityCaches;
 
 }

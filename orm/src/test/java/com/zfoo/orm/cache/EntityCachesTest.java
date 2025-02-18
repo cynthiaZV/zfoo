@@ -13,50 +13,87 @@
 
 package com.zfoo.orm.cache;
 
-import com.mongodb.client.model.Filters;
 import com.zfoo.orm.OrmContext;
 import com.zfoo.orm.entity.UserEntity;
-import com.zfoo.util.ThreadUtils;
-import org.bson.Document;
+import com.zfoo.protocol.util.StringUtils;
+import com.zfoo.protocol.util.ThreadUtils;
+import com.zfoo.scheduler.util.TimeUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.ArrayList;
+
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Ignore
 public class EntityCachesTest {
 
 
     @Test
-    public void test() {
+    public void loadTest() {
         var context = new ClassPathXmlApplicationContext("application.xml");
+
+        batchDelete();
+
+        // 再插入
+        batchInsert();
 
         // 动态去拿到UserEntity的EntityCaches
-        var userEntityCaches = (IEntityCaches<Long, UserEntity>) OrmContext.getOrmManager().getEntityCaches(UserEntity.class);
+        @SuppressWarnings("unchecked")
+        var userEntityCaches = (IEntityCache<Long, UserEntity>) OrmContext.getOrmManager().getEntityCaches(UserEntity.class);
 
         for (var i = 1; i <= 10; i++) {
-            var entity = userEntityCaches.load((long) i);
-            entity.setE("update" + i);
-            entity.setC(i);
-            userEntityCaches.update(entity);
+            for (var j = 1; j <= 10; j++) {
+                var entity = userEntityCaches.load((long) j);
+                entity.setE(StringUtils.format("update-{}-{}", i, j));
+                entity.setC(j);
+                userEntityCaches.update(entity);
+            }
+
+            ThreadUtils.sleep(60 * TimeUtils.MILLIS_PER_SECOND);
         }
 
-        ThreadUtils.sleep(Long.MAX_VALUE);
+        userEntityCaches.load(1L);
     }
-
 
     @Test
-    public void collectionTest() {
+    public void loadOrCreateTest() {
         var context = new ClassPathXmlApplicationContext("application.xml");
 
-        var collection = OrmContext.getOrmManager().getCollection(UserEntity.class);
-        var result = collection.updateOne(Filters.eq("_id", 1), new Document("$inc", new Document("c", 1L)));
-        System.out.println(result);
-        ThreadUtils.sleep(Long.MAX_VALUE);
+        batchDelete();
+
+        @SuppressWarnings("unchecked")
+        var userEntityCaches = (IEntityCache<Long, UserEntity>) OrmContext.getOrmManager().getEntityCaches(UserEntity.class);
+
+        // 动态去拿到UserEntity的EntityCaches
+        for (var i = 1; i <= 10; i++) {
+            for (var j = 1; j <= 10; j++) {
+                var entity = userEntityCaches.loadOrCreate((long) j);
+                entity.setE(StringUtils.format("update-{}-{}", i, j));
+                entity.setC(j);
+                userEntityCaches.update(entity);
+            }
+
+            ThreadUtils.sleep(60 * TimeUtils.MILLIS_PER_SECOND);
+        }
     }
 
+
+    public void batchInsert() {
+        var listUser = new ArrayList<UserEntity>();
+        for (var i = 1; i <= 10; i++) {
+            var userEntity = new UserEntity(i, (byte) 1, (short) i, i, true, "helloOrm" + i, "helloOrm" + i);
+            listUser.add(userEntity);
+        }
+        OrmContext.getAccessor().batchInsert(listUser);
+    }
+
+    public void batchDelete() {
+        for (var i = 1; i <= 10; i++) {
+            OrmContext.getAccessor().delete((long) i, UserEntity.class);
+        }
+    }
 }

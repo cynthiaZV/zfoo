@@ -14,14 +14,12 @@
 package com.zfoo.net.core.gateway;
 
 import com.zfoo.net.core.AbstractServer;
+import com.zfoo.net.core.HostAndPort;
 import com.zfoo.net.handler.GatewayRouteHandler;
 import com.zfoo.net.handler.codec.websocket.WebSocketCodecHandler;
 import com.zfoo.net.handler.idle.ServerIdleHandler;
 import com.zfoo.net.session.Session;
-import com.zfoo.protocol.IPacket;
-import com.zfoo.protocol.exception.ExceptionUtils;
 import com.zfoo.protocol.util.IOUtils;
-import com.zfoo.util.net.HostAndPort;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
@@ -30,8 +28,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
 import javax.net.ssl.SSLException;
@@ -40,22 +36,19 @@ import java.util.function.BiFunction;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class WebsocketSslGatewayServer extends AbstractServer<SocketChannel> {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebsocketSslGatewayServer.class);
-
     private SslContext sslContext;
 
-    private BiFunction<Session, IPacket, Boolean> packetFilter;
+    private BiFunction<Session, Object, Boolean> packetFilter;
 
-    public WebsocketSslGatewayServer(HostAndPort host, InputStream pem, InputStream key, @Nullable BiFunction<Session, IPacket, Boolean> packetFilter) {
+    public WebsocketSslGatewayServer(HostAndPort host, InputStream pem, InputStream key, @Nullable BiFunction<Session, Object, Boolean> packetFilter) {
         super(host);
         try {
             this.sslContext = SslContextBuilder.forServer(pem, key).build();
         } catch (SSLException e) {
-            logger.error(ExceptionUtils.getMessage(e));
+            throw new IllegalArgumentException(e);
         }
         this.packetFilter = packetFilter;
     }

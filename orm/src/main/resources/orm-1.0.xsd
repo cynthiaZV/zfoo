@@ -9,7 +9,7 @@
             elementFormDefault="qualified"
             attributeFormDefault="unqualified">
 
-    <xsd:element name="config">
+    <xsd:element name="orm">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:choice minOccurs="0" maxOccurs="1">
@@ -34,6 +34,7 @@
         <xsd:attribute name="database" type="xsd:string" use="required"/>
         <xsd:attribute name="user" type="xsd:string" use="required"/>
         <xsd:attribute name="password" type="xsd:string" use="required"/>
+        <xsd:attribute name="authSource" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:complexType name="addressAttributeType">

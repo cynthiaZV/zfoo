@@ -2,8 +2,8 @@ English | [简体中文](./README_CN.md)
 
 ### Ⅰ. Introduction
 
-- [net](https://github.com/zfoo-project/zfoo/blob/main/net/README.md) Naturally asynchronous, Actor design idea,
-  lock-free design, universal RPC framework based on Spring's MVC-style usage
+- [net](https://github.com/zfoo-project/zfoo/blob/main/net/README.md) Asynchronous, actor design,
+  lock-free, universal RPC framework based on Spring's MVC-style usage
 
 1. Elegant synchronous and asynchronous requests, faster, supports tcp udp websocket
 2. Service registration and discovery, the configuration center uses zookeeper, which can be extended to other
@@ -50,7 +50,7 @@ Some of them are listed below：
     akka，Using Scala language, the learning cost is extremely high, just give up;
     
 So I wrote a universal rpc framework, the code is lightweight, can be easily customized, with its own gateway, inherently asynchronous, and the tool chain is complete.
-After subsequent continuous optimization, a serialization framework with the fastest speed in Java was also made, and then the speed took off directly.
+After subsequent continuous optimization, a serialization framework with the very fast speed in Java was also made, and then the speed took off directly.
 Later, I found out that it can be used not only for games, but also for rpc scenes with extreme performance requirements.
 ```
 

@@ -17,21 +17,19 @@ import com.mongodb.client.model.BulkWriteOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOneModel;
 import com.zfoo.orm.OrmContext;
-import com.zfoo.orm.model.entity.IEntity;
+import com.zfoo.orm.cache.persister.PNode;
+import com.zfoo.orm.model.IEntity;
 import com.zfoo.protocol.collection.CollectionUtils;
+import com.zfoo.scheduler.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.in;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class MongodbAccessor implements IAccessor {
 
@@ -39,7 +37,8 @@ public class MongodbAccessor implements IAccessor {
 
 
     @Override
-    public <E extends IEntity<?>> boolean insert(E entity) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> boolean insert(E entity) {
+        @SuppressWarnings("unchecked")
         var entityClazz = (Class<E>) entity.getClass();
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
         var result = collection.insertOne(entity);
@@ -47,96 +46,103 @@ public class MongodbAccessor implements IAccessor {
     }
 
     @Override
-    public <E extends IEntity<?>> void batchInsert(List<E> entities) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> void batchInsert(List<E> entities) {
         if (CollectionUtils.isEmpty(entities)) {
             return;
         }
+        @SuppressWarnings("unchecked")
         var entityClazz = (Class<E>) entities.get(0).getClass();
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
         collection.insertMany(entities);
     }
 
     @Override
-    public <E extends IEntity<?>> boolean update(E entity) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> boolean update(E entity) {
         try {
+            @SuppressWarnings("unchecked")
             var entityClazz = (Class<E>) entity.getClass();
             var collection = OrmContext.getOrmManager().getCollection(entityClazz);
 
             var filter = Filters.eq("_id", entity.id());
 
             var result = collection.replaceOne(filter, entity);
-            if (result.getModifiedCount() <= 0) {
-                logger.warn("数据库[{}]中没有[id:{}]的字段，或者需要更新的数据和数据库中的相同", entityClazz.getSimpleName(), entity.id());
+            if (result.getMatchedCount() <= 0) {
+                // 数据库中没有这个id
+                logger.warn("database:[{}] [_id:{}] not exist", entityClazz.getSimpleName(), entity.id());
                 return false;
             }
             return true;
         } catch (Throwable t) {
-            logger.error("更新update未知异常", t);
+            logger.error("update unknown exception", t);
         }
         return false;
     }
 
     @Override
-    public <E extends IEntity<?>> void batchUpdate(List<E> entities) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> void batchUpdate(List<E> entities) {
         if (CollectionUtils.isEmpty(entities)) {
             return;
         }
 
         try {
+            @SuppressWarnings("unchecked")
             var entityClazz = (Class<E>) entities.get(0).getClass();
             var collection = OrmContext.getOrmManager().getCollection(entityClazz);
 
             var batchList = entities.stream()
                     .map(it -> new ReplaceOneModel<E>(Filters.eq("_id", it.id()), it))
-                    .collect(Collectors.toList());
+                    .toList();
 
             var result = collection.bulkWrite(batchList, new BulkWriteOptions().ordered(false));
-            if (result.getModifiedCount() != entities.size()) {
-                logger.error("在数据库[{}]的批量更新操作中需要更新的数量[{}]和最终更新的数量[{}]不相同"
-                        , entityClazz.getSimpleName(), entities.size(), result.getModifiedCount());
+            if (result.getMatchedCount() != entities.size()) {
+                // 在数据库的批量更新操作中需要更新的数量和最终更新的数量不相同
+                logger.warn("database:[{}] update size:[{}] not equal with matched size:[{}](some entity of id not exist in database)"
+                        , entityClazz.getSimpleName(), entities.size(), result.getMatchedCount());
             }
         } catch (Throwable t) {
-            logger.error("批量更新batchUpdate未知异常", t);
+            logger.error("batchUpdate unknown exception", t);
         }
     }
 
     @Override
-    public <E extends IEntity<?>> boolean delete(E entity) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> boolean delete(E entity) {
+        @SuppressWarnings("unchecked")
         var entityClazz = (Class<E>) entity.getClass();
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
-        var result = collection.deleteOne(eq("_id", entity.id()));
+        var result = collection.deleteOne(Filters.eq("_id", entity.id()));
         return result.getDeletedCount() > 0;
     }
 
     @Override
-    public <E extends IEntity<?>> boolean delete(Object pk, Class<E> entityClazz) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> boolean delete(PK pk, Class<E> entityClazz) {
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
-        var result = collection.deleteOne(eq("_id", pk));
+        var result = collection.deleteOne(Filters.eq("_id", pk));
         return result.getDeletedCount() > 0;
     }
 
     @Override
-    public <E extends IEntity<?>> void batchDelete(List<E> entities) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> void batchDelete(List<E> entities) {
         if (CollectionUtils.isEmpty(entities)) {
             return;
         }
+        @SuppressWarnings("unchecked")
         var entityClazz = (Class<E>) entities.get(0).getClass();
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
-        var ids = entities.stream().map(it -> (it).id()).collect(Collectors.toList());
-        collection.deleteMany(in("_id", ids));
+        var ids = entities.stream().map(it -> (it).id()).toList();
+        collection.deleteMany(Filters.in("_id", ids));
     }
 
     @Override
-    public <E extends IEntity<?>> void batchDelete(List<?> pks, Class<E> entityClazz) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> void batchDelete(List<PK> pks, Class<E> entityClazz) {
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
-        collection.deleteMany(in("_id", pks));
+        collection.deleteMany(Filters.in("_id", pks));
     }
 
     @Override
-    public <E extends IEntity<?>> E load(Object pk, Class<E> entityClazz) {
+    public <PK extends Comparable<PK>, E extends IEntity<PK>> E load(PK pk, Class<E> entityClazz) {
         var collection = OrmContext.getOrmManager().getCollection(entityClazz);
         var result = new ArrayList<E>(1);
-        collection.find(eq("_id", pk)).forEach(document -> result.add(document));
+        collection.find(Filters.eq("_id", pk)).forEach(document -> result.add(document));
         if (CollectionUtils.isEmpty(result)) {
             return null;
         }

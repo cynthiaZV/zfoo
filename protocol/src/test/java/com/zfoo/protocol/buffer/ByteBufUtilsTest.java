@@ -13,23 +13,13 @@
 
 package com.zfoo.protocol.buffer;
 
-import com.zfoo.protocol.ProtocolManager;
-import com.zfoo.protocol.buffer.model.BigPacket;
-import com.zfoo.protocol.util.StringUtils;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.netty.buffer.UnpooledHeapByteBuf;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Set;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ByteBufUtilsTest {
 
@@ -111,81 +101,87 @@ public class ByteBufUtilsTest {
     }
 
     @Test
-    public void charTest() {
-        char c = 'a';
-        ByteBuf byteBuf = Unpooled.buffer();
-        ByteBufUtils.writeChar(byteBuf, c);
-        char result = ByteBufUtils.readChar(byteBuf);
-        Assert.assertEquals(result, c);
+    public void adjustPaddingEqualTest() {
+        var byteBuf = Unpooled.buffer();
+        var beforeWriteIndex = byteBuf.writerIndex();
+        var predictionLength = 1000;
 
-        Character d = null;
-        ByteBufUtils.writeCharBox(byteBuf, d);
-        Assert.assertEquals(ByteBufUtils.readCharBox(byteBuf), Character.valueOf(Character.MIN_VALUE));
-    }
-
-    @Ignore
-    @Test
-    public void readLongSpeedTest() {
-        var startTime = System.currentTimeMillis();
-        long[] values = new long[]{Long.MIN_VALUE, -9999999999999999L, -9999999999999999L, -99999999, -9999, -100, -2, -1
-                , 0, 1, 2, 100, 9999, 99999999, 9999999999999999L, Long.MAX_VALUE};
-        ByteBuf buffer = new UnpooledHeapByteBuf(ByteBufAllocator.DEFAULT, 100, 1_0000);
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            buffer.clear();
-            for (long value : values) {
-                ByteBufUtils.writeLong(buffer, value);
-                ByteBufUtils.readLong(buffer);
-            }
-        }
-        System.out.println(System.currentTimeMillis() - startTime);
-    }
-
-
-    /**
-     * 测试所有int值，运行时间太长，放弃测试
-     */
-    @Ignore
-    @Test
-    public void readIntTest() {
-        ByteBuf byteBuf = Unpooled.buffer();
-        for (int value = Integer.MIN_VALUE; value < Integer.MAX_VALUE; value++) {
-            byteBuf.clear();
-            ByteBufUtils.writeInt(byteBuf, value);
-            int result = ByteBufUtils.readInt(byteBuf);
-            Assert.assertEquals(result, value);
-        }
-    }
-
-
-    @Ignore
-    @Test
-    public void readLongTest() {
-        ByteBuf byteBuf = Unpooled.buffer();
-        for (long value = Long.MIN_VALUE; value < Long.MAX_VALUE; value++) {
-            byteBuf.clear();
-            ByteBufUtils.writeLong(byteBuf, value);
-            Assert.assertEquals(ByteBufUtils.readLong(byteBuf), value);
-        }
-    }
-
-    @Ignore
-    @Test
-    public void bigDataTest() {
-        ProtocolManager.initProtocol(Set.of(BigPacket.class));
-
-        var bigPact = new BigPacket();
-        Arrays.fill(bigPact.a, 99);
-
-        var buffer = new UnpooledHeapByteBuf(ByteBufAllocator.DEFAULT, 100, 100_0000);
-
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 10_0000; i++) {
-            buffer.clear();
-            ProtocolManager.write(buffer, bigPact);
-            var newPacket = ProtocolManager.read(buffer);
+        // padding等于0的情况
+        ByteBufUtils.writeInt(byteBuf, predictionLength);
+        for (int i = 0; i < predictionLength; i++) {
+            ByteBufUtils.writeByte(byteBuf, (byte) 1);
         }
 
-        System.out.println(StringUtils.format("[zfoo][size:{}] [time:{}]", buffer.writerIndex(), System.currentTimeMillis() - startTime));
+        byteBuf.markReaderIndex();
+        var bytes1 = ByteBufUtils.readAllBytes(byteBuf);
+        byteBuf.resetReaderIndex();
+
+        ByteBufUtils.adjustPadding(byteBuf, predictionLength, beforeWriteIndex);
+
+        byteBuf.markReaderIndex();
+        var bytes2 = ByteBufUtils.readAllBytes(byteBuf);
+        byteBuf.resetReaderIndex();
+
+        Assert.assertArrayEquals(bytes1, bytes2);
     }
 
+    @Test
+    public void adjustPaddingLessTest() {
+        var byteBuf = Unpooled.buffer();
+        var beforeWriteIndex = byteBuf.writerIndex();
+        var predictionLength = 1000;
+        var length = predictionLength / 100;
+
+        // padding等于0的情况
+        ByteBufUtils.writeInt(byteBuf, predictionLength);
+        for (int i = 0; i < length; i++) {
+            ByteBufUtils.writeByte(byteBuf, (byte) 1);
+        }
+
+
+        var byteBuf1 = Unpooled.buffer();
+        ByteBufUtils.writeInt(byteBuf1, length);
+        for (int i = 0; i < length; i++) {
+            ByteBufUtils.writeByte(byteBuf1, (byte) 1);
+        }
+        var bytes1 = ByteBufUtils.readAllBytes(byteBuf1);
+
+        ByteBufUtils.adjustPadding(byteBuf, predictionLength, beforeWriteIndex);
+
+        byteBuf.markReaderIndex();
+        var bytes2 = ByteBufUtils.readAllBytes(byteBuf);
+        byteBuf.resetReaderIndex();
+
+        Assert.assertArrayEquals(bytes1, bytes2);
+    }
+
+    @Test
+    public void adjustPaddingMoreTest() {
+        var byteBuf = Unpooled.buffer();
+        var beforeWriteIndex = byteBuf.writerIndex();
+        var predictionLength = 1000;
+        var length = predictionLength * 10;
+
+        // padding等于0的情况
+        ByteBufUtils.writeInt(byteBuf, predictionLength);
+        for (int i = 0; i < length; i++) {
+            ByteBufUtils.writeByte(byteBuf, (byte) 1);
+        }
+
+
+        var byteBuf1 = Unpooled.buffer();
+        ByteBufUtils.writeInt(byteBuf1, length);
+        for (int i = 0; i < length; i++) {
+            ByteBufUtils.writeByte(byteBuf1, (byte) 1);
+        }
+        var bytes1 = ByteBufUtils.readAllBytes(byteBuf1);
+
+        ByteBufUtils.adjustPadding(byteBuf, predictionLength, beforeWriteIndex);
+
+        byteBuf.markReaderIndex();
+        var bytes2 = ByteBufUtils.readAllBytes(byteBuf);
+        byteBuf.resetReaderIndex();
+
+        Assert.assertArrayEquals(bytes1, bytes2);
+    }
 }

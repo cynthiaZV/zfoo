@@ -1,6 +1,7 @@
 #ifndef ZFOO_LIST_TEST_H
 #define ZFOO_LIST_TEST_H
 
+#include <cstdint>
 #include "list.h"
 
 namespace list_test {
@@ -104,20 +105,14 @@ namespace list_test {
 
     void list_all_test() {
         using namespace std;
-        try {
-            listCopyTest();
-            cout << "----------------------------------------------------------------------" << endl;
-            listOperatorTest();
-            cout << "----------------------------------------------------------------------" << endl;
-            listIntTest();
-            cout << "----------------------------------------------------------------------" << endl;
-            listRemoveTest();
-            cout << "----------------------------------------------------------------------" << endl;
-        } catch (string &e) {
-            cout << e << endl;
-        } catch (...) {
-            cout << "unknown" << endl;
-        }
+        listCopyTest();
+        cout << "----------------------------------------------------------------------" << endl;
+        listOperatorTest();
+        cout << "----------------------------------------------------------------------" << endl;
+        listIntTest();
+        cout << "----------------------------------------------------------------------" << endl;
+        listRemoveTest();
+        cout << "----------------------------------------------------------------------" << endl;
     }
 }
 #endif

@@ -13,9 +13,11 @@
 
 package com.zfoo.protocol.xml;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({"id", "location", "enhance"})
 public class XmlProtocolDefinition {
 

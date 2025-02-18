@@ -14,8 +14,7 @@
 package com.zfoo.net.router.answer;
 
 import com.zfoo.net.router.attachment.SignalAttachment;
-import com.zfoo.protocol.IPacket;
-import com.zfoo.util.SafeRunnable;
+import com.zfoo.protocol.util.ThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +22,8 @@ import java.util.function.Consumer;
 
 /**
  * @author godotg
- * @version 3.0
  */
-public class AsyncAnswer<T extends IPacket> implements IAsyncAnswer<T> {
+public class AsyncAnswer<T> implements IAsyncAnswer<T> {
 
     private T futurePacket;
 
@@ -34,7 +32,7 @@ public class AsyncAnswer<T extends IPacket> implements IAsyncAnswer<T> {
 
     private Runnable askCallback;
 
-    private SafeRunnable notCompleteCallback;
+    private Runnable notCompleteCallback;
 
 
     @Override
@@ -52,8 +50,8 @@ public class AsyncAnswer<T extends IPacket> implements IAsyncAnswer<T> {
     }
 
     @Override
-    public IAsyncAnswer<T> notComplete(SafeRunnable notCompleteCallback) {
-        this.notCompleteCallback = notCompleteCallback;
+    public IAsyncAnswer<T> notComplete(Runnable notCompleteCallback) {
+        this.notCompleteCallback = ThreadUtils.safeRunnable(notCompleteCallback);
         return this;
     }
 
@@ -85,7 +83,7 @@ public class AsyncAnswer<T extends IPacket> implements IAsyncAnswer<T> {
         this.askCallback = askCallback;
     }
 
-    public SafeRunnable getNotCompleteCallback() {
+    public Runnable getNotCompleteCallback() {
         return notCompleteCallback;
     }
 }

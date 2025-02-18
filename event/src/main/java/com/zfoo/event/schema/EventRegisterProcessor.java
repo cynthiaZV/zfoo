@@ -13,12 +13,13 @@
 
 package com.zfoo.event.schema;
 
+import com.zfoo.event.anno.EventReceiver;
+import com.zfoo.event.enhance.EnhanceUtils;
+import com.zfoo.event.enhance.EventReceiverDefinition;
 import com.zfoo.event.manager.EventBus;
-import com.zfoo.event.model.anno.EventReceiver;
-import com.zfoo.event.model.event.IEvent;
-import com.zfoo.event.model.vo.EnhanceUtils;
-import com.zfoo.event.model.vo.EventReceiverDefinition;
+import com.zfoo.event.model.IEvent;
 import com.zfoo.protocol.collection.ArrayUtils;
+import com.zfoo.protocol.util.GraalVmUtils;
 import com.zfoo.protocol.util.ReflectionUtils;
 import com.zfoo.protocol.util.StringUtils;
 import org.slf4j.Logger;
@@ -33,7 +34,6 @@ import java.lang.reflect.Modifier;
  * 断点发现 在AbstractAutowireCapableBeanFactory或调用getBeanPostProcessors，这样子每一个Bean创建后都会走postProcessAfterInitialization这个方法
  *
  * @author godotg
- * @version 3.0
  */
 public class EventRegisterProcessor implements BeanPostProcessor {
 
@@ -60,7 +60,7 @@ public class EventRegisterProcessor implements BeanPostProcessor {
                 if (!IEvent.class.isAssignableFrom(paramClazzs[0])) {
                     throw new IllegalArgumentException(StringUtils.format("[class:{}] [method:{}] must have one [IEvent] type parameter!", bean.getClass().getName(), method.getName()));
                 }
-
+                @SuppressWarnings("unchecked")
                 var eventClazz = (Class<? extends IEvent>) paramClazzs[0];
                 var eventName = eventClazz.getCanonicalName();
                 var methodName = method.getName();
@@ -79,13 +79,14 @@ public class EventRegisterProcessor implements BeanPostProcessor {
                             , bean.getClass().getName(), methodName, eventName, expectedMethodName));
                 }
 
-                var receiverDefinition = new EventReceiverDefinition(bean, method, eventClazz);
-                var enhanceReceiverDefinition = EnhanceUtils.createEventReceiver(receiverDefinition);
-
-                //异步执行标志，false表示同步执行，true表示异步执行
-                var asyncFlag = method.getDeclaredAnnotation(EventReceiver.class).async();
-                // key:class类型 value:观察者 注册Event的receiverMap中
-                EventBus.registerEventReceiver(eventClazz, enhanceReceiverDefinition, asyncFlag);
+                var bus = method.getDeclaredAnnotation(EventReceiver.class).value();
+                var receiverDefinition = new EventReceiverDefinition(bean, method, bus, eventClazz);
+                if (GraalVmUtils.isGraalVM()) {
+                    EventBus.registerEventReceiver(eventClazz, receiverDefinition);
+                } else {
+                    // key:class类型 value:观察者 注册Event的receiverMap中
+                    EventBus.registerEventReceiver(eventClazz, EnhanceUtils.createEventReceiver(receiverDefinition));
+                }
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);

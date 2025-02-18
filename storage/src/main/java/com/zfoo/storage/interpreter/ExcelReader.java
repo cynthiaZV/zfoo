@@ -14,8 +14,8 @@ package com.zfoo.storage.interpreter;
 
 import com.zfoo.protocol.exception.RunException;
 import com.zfoo.protocol.util.StringUtils;
-import com.zfoo.storage.model.resource.ResourceData;
-import com.zfoo.storage.model.resource.ResourceHeader;
+import com.zfoo.storage.interpreter.data.StorageData;
+import com.zfoo.storage.interpreter.data.StorageHeader;
 import com.zfoo.storage.util.CellUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -27,18 +27,17 @@ import java.util.*;
 
 /**
  * @author meiwei666
- * @version 4.0
  */
 public abstract class ExcelReader {
 
-    public static ResourceData readResourceDataFromExcel(InputStream inputStream, String resourceClassName) {
+    public static StorageData readResourceDataFromExcel(InputStream inputStream, String resourceClassName) {
         // 只读取代码里写的字段
         var wb = createWorkbook(inputStream, resourceClassName);
         // 默认取到第一个sheet页
         var sheet = wb.getSheetAt(0);
         var iterator = sheet.iterator();
-        //设置所有列
-        var headers = getHeaders(iterator, resourceClassName);
+        // 设置所有列
+        var excelHeaders = getHeaders(iterator, resourceClassName);
 
         var rows = new ArrayList<List<String>>();
         while (iterator.hasNext()) {
@@ -50,17 +49,24 @@ public abstract class ExcelReader {
             }
 
             var columns = new ArrayList<String>();
-            for (var header : headers) {
+            for (var header : excelHeaders) {
                 var cell = row.getCell(header.getIndex());
                 var content = CellUtils.getCellStringValue(cell);
                 columns.add(content);
             }
             rows.add(columns);
         }
-        return ResourceData.valueOf(resourceClassName, headers, rows);
+
+        // excel某些格子空的引起的列偏移
+        var headers = new ArrayList<StorageHeader>();
+        for (var i = 0; i < excelHeaders.size(); i++) {
+            var excelHeader = excelHeaders.get(i);
+            headers.add(StorageHeader.valueOf(excelHeader.getName(), excelHeader.getType(), i));
+        }
+        return StorageData.valueOf(resourceClassName, headers, rows);
     }
 
-    private static List<ResourceHeader> getHeaders(Iterator<Row> iterator, String resourceClassName) {
+    private static List<StorageHeader> getHeaders(Iterator<Row> iterator, String resourceClassName) {
         // 获取配置表的有效列名称，默认第一行就是字段名称
         var fieldRow = iterator.next();
         if (fieldRow == null) {
@@ -73,7 +79,7 @@ public abstract class ExcelReader {
         }
         // 默认第三行为描述，需要的时候再使用
         var desRow = iterator.next();
-        var headerList = new ArrayList<ResourceHeader>();
+        var headerList = new ArrayList<StorageHeader>();
         var cellFieldMap = new HashMap<String, Integer>();
         for (var i = 0; i < fieldRow.getLastCellNum(); i++) {
             var fieldCell = fieldRow.getCell(i);
@@ -96,7 +102,7 @@ public abstract class ExcelReader {
             if (Objects.nonNull(previousValue)) {
                 throw new RunException("There are duplicate attribute control columns [field:{}] in the Excel file of the resource [class:{}]", excelFieldName,resourceClassName);
             }
-            headerList.add(ResourceHeader.valueOf(excelFieldName, typeName, i));
+            headerList.add(StorageHeader.valueOf(excelFieldName, typeName, i));
         }
         return headerList;
     }
@@ -104,8 +110,8 @@ public abstract class ExcelReader {
     private static Workbook createWorkbook(InputStream input, String fileName) {
         try {
             return WorkbookFactory.create(input);
-        } catch (IOException e) {
-            throw new RunException("Static resource [{}] is abnormal, and the file cannot be read", fileName, e);
+        } catch (Exception e) {
+            throw new RunException("Static excel resource [{}] is abnormal, and the file cannot be read", fileName, e);
         }
     }
 }

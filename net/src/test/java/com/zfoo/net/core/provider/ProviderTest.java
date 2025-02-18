@@ -16,9 +16,9 @@ package com.zfoo.net.core.provider;
 import com.zfoo.net.NetContext;
 import com.zfoo.net.packet.provider.ProviderMessAnswer;
 import com.zfoo.net.packet.provider.ProviderMessAsk;
-import com.zfoo.net.session.SessionUtils;
+import com.zfoo.net.util.SessionUtilsTest;
 import com.zfoo.protocol.util.JsonUtils;
-import com.zfoo.util.ThreadUtils;
+import com.zfoo.protocol.util.ThreadUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author godotg
- * @version 3.0
  */
 @Ignore
 public class ProviderTest {
@@ -40,27 +39,27 @@ public class ProviderTest {
      * RPC教程：
      * 1.首先必须保证启动zookeeper
      * 2.启动服务提供者，startProvider0，startProvider1，startProvider2
-     * 3.启动服务消费者，startSyncRandomConsumer，startAsyncRandomConsumer，startConsistentSessionConsumer
+     * 3.启动服务消费者，startSyncRandomConsumer，startAsyncRandomConsumer，startConsistentHashConsumer, startCachedConsistentHashConsumer
      * 4.每个消费者都是通过不同的策略消费，注意区别
      */
     @Test
     public void startProvider0() {
         var context = new ClassPathXmlApplicationContext("provider/provider_config.xml");
-        SessionUtils.printSessionInfo();
+        SessionUtilsTest.printSessionInfo();
         ThreadUtils.sleep(Long.MAX_VALUE);
     }
 
     @Test
     public void startProvider1() {
         var context = new ClassPathXmlApplicationContext("provider/provider_config.xml");
-        SessionUtils.printSessionInfo();
+        SessionUtilsTest.printSessionInfo();
         ThreadUtils.sleep(Long.MAX_VALUE);
     }
 
     @Test
     public void startProvider2() {
         var context = new ClassPathXmlApplicationContext("provider/provider_config.xml");
-        SessionUtils.printSessionInfo();
+        SessionUtilsTest.printSessionInfo();
         ThreadUtils.sleep(Long.MAX_VALUE);
     }
 
@@ -70,12 +69,12 @@ public class ProviderTest {
     @Test
     public void startSyncRandomConsumer() throws Exception {
         var context = new ClassPathXmlApplicationContext("provider/consumer_random_config.xml");
-        SessionUtils.printSessionInfo();
+        SessionUtilsTest.printSessionInfo();
 
         var ask = new ProviderMessAsk();
         ask.setMessage("Hello, this is the consumer!");
         for (int i = 0; i < 1000; i++) {
-            ThreadUtils.sleep(3000);
+            ThreadUtils.sleep(1000);
             var response = NetContext.getConsumer().syncAsk(ask, ProviderMessAnswer.class, null).packet();
             logger.info("消费者请求[{}]收到消息[{}]", i, JsonUtils.object2String(response));
         }
@@ -89,14 +88,14 @@ public class ProviderTest {
     @Test
     public void startAsyncRandomConsumer() {
         var context = new ClassPathXmlApplicationContext("provider/consumer_random_config.xml");
-        SessionUtils.printSessionInfo();
+        SessionUtilsTest.printSessionInfo();
 
         var ask = new ProviderMessAsk();
         ask.setMessage("Hello, this is the consumer!");
         var atomicInteger = new AtomicInteger(0);
 
         for (int i = 0; i < 1000; i++) {
-            ThreadUtils.sleep(3000);
+            ThreadUtils.sleep(1000);
             NetContext.getConsumer().asyncAsk(ask, ProviderMessAnswer.class, null).whenComplete(answer -> {
                 logger.info("消费者请求[{}]收到消息[{}]", atomicInteger.incrementAndGet(), JsonUtils.object2String(answer));
             });
@@ -109,16 +108,16 @@ public class ProviderTest {
      * 一致性hash算法消费方式
      */
     @Test
-    public void startConsistentSessionConsumer() {
-        var context = new ClassPathXmlApplicationContext("provider/consumer_consistent_session_config.xml");
-        SessionUtils.printSessionInfo();
+    public void startConsistentHashConsumer() {
+        var context = new ClassPathXmlApplicationContext("provider/consumer_consistent_hash_config.xml");
+        SessionUtilsTest.printSessionInfo();
 
         var ask = new ProviderMessAsk();
         ask.setMessage("Hello, this is the consumer!");
         var atomicInteger = new AtomicInteger(0);
 
         for (int i = 0; i < 1000; i++) {
-            ThreadUtils.sleep(3000);
+            ThreadUtils.sleep(1000);
             NetContext.getConsumer().asyncAsk(ask, ProviderMessAnswer.class, 100).whenComplete(answer -> {
                 logger.info("消费者请求[{}]收到消息[{}]", atomicInteger.incrementAndGet(), JsonUtils.object2String(answer));
             });
@@ -127,4 +126,25 @@ public class ProviderTest {
         ThreadUtils.sleep(Long.MAX_VALUE);
     }
 
+    /**
+     * 缓存的一致性hash算法消费方式
+     */
+    @Test
+    public void startCachedConsistentHashConsumer() {
+        var context = new ClassPathXmlApplicationContext("provider/consumer_cached_consistent_config.xml");
+        SessionUtilsTest.printSessionInfo();
+
+        var ask = new ProviderMessAsk();
+        ask.setMessage("Hello, this is the consumer!");
+        var atomicInteger = new AtomicInteger(0);
+
+        for (int i = 0; i < 1000; i++) {
+            ThreadUtils.sleep(1000);
+            NetContext.getConsumer().asyncAsk(ask, ProviderMessAnswer.class, 100).whenComplete(answer -> {
+                logger.info("消费者请求[{}]收到消息[{}]", atomicInteger.incrementAndGet(), JsonUtils.object2String(answer));
+            });
+        }
+
+        ThreadUtils.sleep(Long.MAX_VALUE);
+    }
 }

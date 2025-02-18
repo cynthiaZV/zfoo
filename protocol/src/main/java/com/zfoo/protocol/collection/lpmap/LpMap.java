@@ -12,19 +12,17 @@
 
 package com.zfoo.protocol.collection.lpmap;
 
-import com.zfoo.protocol.IPacket;
 import com.zfoo.protocol.exception.RunException;
 
 import java.util.function.BiConsumer;
 
 /**
- * 类型固定的map，key为long，value为IPacket
+ * 类型固定的map，key为long，value为Object
  * 其中long必须大于等于0，value可以为null
  *
  * @author godotg
- * @version 3.0
  */
-public interface LpMap<V extends IPacket> {
+public interface LpMap<V> {
 
     /**
      * @param packet the previous value associated with key, or null if there was no mapping for key.

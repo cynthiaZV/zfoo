@@ -12,7 +12,6 @@
 
 package com.zfoo.protocol.buffer;
 
-import com.zfoo.protocol.IPacket;
 import com.zfoo.protocol.collection.*;
 import com.zfoo.protocol.registration.IProtocolRegistration;
 import com.zfoo.protocol.util.StringUtils;
@@ -33,29 +32,62 @@ import java.util.Set;
  * “可变长字节码算法”的压缩数据的算法，压缩数据和减少磁盘IO。google的ProtocolBuf和Facebook的thrift底层的通信协议都是由这个算法实现
  *
  * @author godotg
- * @version 3.0
  */
 public abstract class ByteBufUtils {
 
+    //---------------------------------compatible--------------------------------------
+    public static final Double ZERO_DOUBLE = Double.valueOf(0D);
+    public static final Float ZERO_FLOAT = Float.valueOf(0F);
+
+    public static void adjustPadding(ByteBuf byteBuf, int predictionLength, int beforeWriteIndex) {
+        // 因为写入的是可变长的int，如果预留的位置过多，则清除多余的位置
+        var currentWriteIndex = byteBuf.writerIndex();
+        var predictionCount = writeIntCount(predictionLength);
+        var length = currentWriteIndex - beforeWriteIndex - predictionCount;
+        var lengthCount = writeIntCount(length);
+        var padding = lengthCount - predictionCount;
+        if (padding == 0) {
+            byteBuf.writerIndex(beforeWriteIndex);
+            writeInt(byteBuf, length);
+            byteBuf.writerIndex(currentWriteIndex);
+        } else if (padding < 0) {
+            var retainedByteBuf = byteBuf.retainedSlice(currentWriteIndex - length, length);
+            byteBuf.writerIndex(beforeWriteIndex);
+            writeInt(byteBuf, length);
+            byteBuf.writeBytes(retainedByteBuf);
+            ReferenceCountUtil.release(retainedByteBuf);
+        } else {
+            var retainedByteBuf = byteBuf.retainedSlice(currentWriteIndex - length, length);
+            var bytes = readAllBytes(retainedByteBuf);
+            byteBuf.writerIndex(beforeWriteIndex);
+            writeInt(byteBuf, length);
+            byteBuf.writeBytes(bytes);
+            ReferenceCountUtil.release(retainedByteBuf);
+        }
+    }
+
+    public static boolean compatibleRead(ByteBuf byteBuf, int beforeReadIndex, int length) {
+        return length != -1 && byteBuf.readerIndex() < length + beforeReadIndex;
+    }
 
     //---------------------------------boolean--------------------------------------
-    public static void writeBoolean(ByteBuf byteBuf, boolean value) {
+    public static void writeBool(ByteBuf byteBuf, boolean value) {
         byteBuf.writeBoolean(value);
     }
 
-    public static boolean readBoolean(ByteBuf byteBuf) {
+    public static boolean readBool(ByteBuf byteBuf) {
         return byteBuf.readBoolean();
     }
 
-    public static boolean tryReadBoolean(ByteBuf byteBuf) {
-        return byteBuf.isReadable() && readBoolean(byteBuf);
+    public static boolean tryReadBool(ByteBuf byteBuf) {
+        return byteBuf.isReadable() && readBool(byteBuf);
     }
 
-    public static void writeBooleanBox(ByteBuf byteBuf, Boolean value) {
+    public static void writeBoolBox(ByteBuf byteBuf, Boolean value) {
         byteBuf.writeBoolean(value != null && value);
     }
 
-    public static Boolean readBooleanBox(ByteBuf byteBuf) {
+    public static Boolean readBoolBox(ByteBuf byteBuf) {
         return byteBuf.readBoolean();
     }
 
@@ -170,7 +202,7 @@ public abstract class ByteBufUtils {
     }
 
 
-    private static int writeIntCount(int value) {
+    public static int writeIntCount(int value) {
         value = (value << 1) ^ (value >> 31);
 
         if (value >>> 7 == 0) {
@@ -345,6 +377,7 @@ public abstract class ByteBufUtils {
         }
 
         // 预估需要写入的字节数，并预留位置
+        var beforeWriteIndex = byteBuf.writerIndex();
         var maxLength = ByteBufUtil.utf8MaxBytes(value);
         var writeIntCountByte = writeInt(byteBuf, maxLength);
 
@@ -355,12 +388,12 @@ public abstract class ByteBufUtils {
         // 因为写入的是可变长的int，如果预留的位置过多，则清除多余的位置
         var padding = writeIntCountByte - writeIntCount(length);
         if (padding == 0) {
-            byteBuf.writerIndex(currentWriteIndex - length - writeIntCountByte);
+            byteBuf.writerIndex(beforeWriteIndex);
             writeInt(byteBuf, length);
             byteBuf.writerIndex(currentWriteIndex);
         } else {
             var retainedByteBuf = byteBuf.retainedSlice(currentWriteIndex - length, length);
-            byteBuf.writerIndex(currentWriteIndex - length - writeIntCountByte);
+            byteBuf.writerIndex(beforeWriteIndex);
             writeInt(byteBuf, length);
             byteBuf.writeBytes(retainedByteBuf);
             ReferenceCountUtil.release(retainedByteBuf);
@@ -373,37 +406,9 @@ public abstract class ByteBufUtils {
     }
 
 
-    //---------------------------------char--------------------------------------
-    // 很多脚本语言没有char，所以这里使用string代替
-    public static void writeChar(ByteBuf byteBuf, char value) {
-        writeString(byteBuf, String.valueOf(value));
-    }
-
-    public static char readChar(ByteBuf byteBuf) {
-        var value = readString(byteBuf);
-        if (StringUtils.isEmpty(value)) {
-            return Character.MIN_VALUE;
-        }
-        return value.charAt(0);
-    }
-
-    public static void writeCharBox(ByteBuf byteBuf, Character value) {
-        writeChar(byteBuf, value == null ? Character.MIN_VALUE : value);
-    }
-
-    public static Character readCharBox(ByteBuf byteBuf) {
-        return readChar(byteBuf);
-    }
-
     //-----------------------------------------------------------------------
     //---------------------------------以下方法会被字节码生成的代码调用--------------------------------------
-    public static boolean writePacketFlag(ByteBuf byteBuf, IPacket packet) {
-        boolean flag = packet == null;
-        byteBuf.writeBoolean(!flag);
-        return flag;
-    }
-
-    public static void writePacketCollection(ByteBuf byteBuf, Collection<? extends IPacket> collection, IProtocolRegistration protocolRegistration) {
+    public static void writePacketCollection(ByteBuf byteBuf, Collection<?> collection, IProtocolRegistration protocolRegistration) {
         if (collection == null) {
             byteBuf.writeByte(0);
             return;
@@ -414,28 +419,28 @@ public abstract class ByteBufUtils {
         }
     }
 
-    public static void writePacketList(ByteBuf byteBuf, List<? extends IPacket> list, IProtocolRegistration protocolRegistration) {
+    public static void writePacketList(ByteBuf byteBuf, List<?> list, IProtocolRegistration protocolRegistration) {
         writePacketCollection(byteBuf, list, protocolRegistration);
     }
 
-    public static List<IPacket> readPacketList(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
+    public static List<?> readPacketList(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
         var length = readInt(byteBuf);
-        List<IPacket> list = CollectionUtils.newList(length);
+        List<Object> list = CollectionUtils.newList(length);
         for (var i = 0; i < length; i++) {
-            list.add((IPacket) protocolRegistration.read(byteBuf));
+            list.add(protocolRegistration.read(byteBuf));
         }
         return list;
     }
 
-    public static void writePacketSet(ByteBuf byteBuf, Set<? extends IPacket> list, IProtocolRegistration protocolRegistration) {
-        writePacketCollection(byteBuf, list, protocolRegistration);
+    public static void writePacketSet(ByteBuf byteBuf, Set<?> set, IProtocolRegistration protocolRegistration) {
+        writePacketCollection(byteBuf, set, protocolRegistration);
     }
 
-    public static Set<IPacket> readPacketSet(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
+    public static Set<?> readPacketSet(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
         var length = readInt(byteBuf);
-        Set<IPacket> set = CollectionUtils.newSet(length);
+        Set<Object> set = CollectionUtils.newSet(length);
         for (var i = 0; i < length; i++) {
-            set.add((IPacket) protocolRegistration.read(byteBuf));
+            set.add(protocolRegistration.read(byteBuf));
         }
         return set;
     }
@@ -503,7 +508,7 @@ public abstract class ByteBufUtils {
         return map;
     }
 
-    public static void writeIntPacketMap(ByteBuf byteBuf, Map<Integer, ? extends IPacket> map, IProtocolRegistration protocolRegistration) {
+    public static void writeIntPacketMap(ByteBuf byteBuf, Map<Integer, ?> map, IProtocolRegistration protocolRegistration) {
         if (map == null) {
             byteBuf.writeByte(0);
             return;
@@ -515,11 +520,11 @@ public abstract class ByteBufUtils {
         }
     }
 
-    public static Map<Integer, IPacket> readIntPacketMap(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
+    public static Map<Integer, ?> readIntPacketMap(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
         var length = readInt(byteBuf);
-        var map = new IntObjectHashMap<IPacket>(CollectionUtils.comfortableCapacity(length));
+        var map = new IntObjectHashMap<>(CollectionUtils.comfortableCapacity(length));
         for (var i = 0; i < length; i++) {
-            map.put(readInt(byteBuf), (IPacket) protocolRegistration.read(byteBuf));
+            map.put(readInt(byteBuf), protocolRegistration.read(byteBuf));
         }
         return map;
     }
@@ -587,7 +592,7 @@ public abstract class ByteBufUtils {
         return map;
     }
 
-    public static void writeLongPacketMap(ByteBuf byteBuf, Map<Long, ? extends IPacket> map, IProtocolRegistration protocolRegistration) {
+    public static void writeLongPacketMap(ByteBuf byteBuf, Map<Long, ?> map, IProtocolRegistration protocolRegistration) {
         if (map == null) {
             byteBuf.writeByte(0);
             return;
@@ -599,11 +604,11 @@ public abstract class ByteBufUtils {
         }
     }
 
-    public static Map<Long, IPacket> readLongPacketMap(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
+    public static Map<Long, ?> readLongPacketMap(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
         var length = readInt(byteBuf);
-        var map = new LongObjectHashMap<IPacket>(CollectionUtils.comfortableCapacity(length));
+        var map = new LongObjectHashMap<>(CollectionUtils.comfortableCapacity(length));
         for (var i = 0; i < length; i++) {
-            map.put(readLong(byteBuf), (IPacket) protocolRegistration.read(byteBuf));
+            map.put(readLong(byteBuf), protocolRegistration.read(byteBuf));
         }
         return map;
     }
@@ -671,7 +676,7 @@ public abstract class ByteBufUtils {
         return map;
     }
 
-    public static void writeStringPacketMap(ByteBuf byteBuf, Map<String, ? extends IPacket> map, IProtocolRegistration protocolRegistration) {
+    public static void writeStringPacketMap(ByteBuf byteBuf, Map<String, ?> map, IProtocolRegistration protocolRegistration) {
         if (map == null) {
             byteBuf.writeByte(0);
             return;
@@ -683,17 +688,17 @@ public abstract class ByteBufUtils {
         }
     }
 
-    public static Map<String, IPacket> readStringPacketMap(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
+    public static Map<String, ?> readStringPacketMap(ByteBuf byteBuf, IProtocolRegistration protocolRegistration) {
         var length = readInt(byteBuf);
-        Map<String, IPacket> map = CollectionUtils.newMap(length);
+        Map<String, Object> map = CollectionUtils.newMap(length);
         for (var i = 0; i < length; i++) {
-            map.put(readString(byteBuf), (IPacket) protocolRegistration.read(byteBuf));
+            map.put(readString(byteBuf), protocolRegistration.read(byteBuf));
         }
         return map;
     }
 
     //---------------------------------boolean--------------------------------------
-    public static void writeBooleanArray(ByteBuf byteBuf, boolean[] array) {
+    public static void writeBoolArray(ByteBuf byteBuf, boolean[] array) {
         if (array == null) {
             byteBuf.writeByte(0);
             return;
@@ -707,9 +712,9 @@ public abstract class ByteBufUtils {
         byteBuf.writeBytes(bytes);
     }
 
-    public static boolean[] readBooleanArray(ByteBuf byteBuf) {
+    public static boolean[] readBoolArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var bytes = new byte[CollectionUtils.comfortableLength(length)];
+        var bytes = new byte[CollectionUtils.comfortableByteLength(length)];
         var array = new boolean[length];
         byteBuf.readBytes(bytes);
         for (var i = 0; i < length; i++) {
@@ -718,54 +723,54 @@ public abstract class ByteBufUtils {
         return array;
     }
 
-    public static void writeBooleanBoxArray(ByteBuf byteBuf, Boolean[] array) {
+    public static void writeBoolBoxArray(ByteBuf byteBuf, Boolean[] array) {
         if (array == null) {
             byteBuf.writeByte(0);
             return;
         }
         writeInt(byteBuf, array.length);
         for (var value : array) {
-            writeBooleanBox(byteBuf, value);
+            writeBoolBox(byteBuf, value);
         }
     }
 
-    public static Boolean[] readBooleanBoxArray(ByteBuf byteBuf) {
+    public static Boolean[] readBoolBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var array = new Boolean[CollectionUtils.comfortableLength(length)];
+        var array = new Boolean[CollectionUtils.comfortableByteLength(length)];
         for (var i = 0; i < length; i++) {
-            array[i] = readBooleanBox(byteBuf);
+            array[i] = readBoolBox(byteBuf);
         }
         return array;
     }
 
-    public static void writeBooleanCollection(ByteBuf byteBuf, Collection<Boolean> collection) {
+    public static void writeBoolCollection(ByteBuf byteBuf, Collection<Boolean> collection) {
         if (collection == null) {
             byteBuf.writeByte(0);
             return;
         }
         writeInt(byteBuf, collection.size());
         for (var value : collection) {
-            writeBooleanBox(byteBuf, value);
+            writeBoolBox(byteBuf, value);
         }
     }
 
-    public static void writeBooleanList(ByteBuf byteBuf, List<Boolean> list) {
-        writeBooleanCollection(byteBuf, list);
+    public static void writeBoolList(ByteBuf byteBuf, List<Boolean> list) {
+        writeBoolCollection(byteBuf, list);
     }
 
-    public static List<Boolean> readBooleanList(ByteBuf byteBuf) {
-        return new ArrayListBoolean(readBooleanArray(byteBuf));
+    public static List<Boolean> readBoolList(ByteBuf byteBuf) {
+        return new ArrayListBoolean(readBoolArray(byteBuf));
     }
 
-    public static void writeBooleanSet(ByteBuf byteBuf, Set<Boolean> set) {
-        writeBooleanCollection(byteBuf, set);
+    public static void writeBoolSet(ByteBuf byteBuf, Set<Boolean> set) {
+        writeBoolCollection(byteBuf, set);
     }
 
-    public static Set<Boolean> readBooleanSet(ByteBuf byteBuf) {
+    public static Set<Boolean> readBoolSet(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
         Set<Boolean> set = CollectionUtils.newSet(length);
         for (var i = 0; i < length; i++) {
-            set.add(readBooleanBox(byteBuf));
+            set.add(readBoolBox(byteBuf));
         }
         return set;
     }
@@ -786,7 +791,7 @@ public abstract class ByteBufUtils {
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
 
-        var bytes = new byte[CollectionUtils.comfortableLength(length)];
+        var bytes = new byte[CollectionUtils.comfortableByteLength(length)];
         byteBuf.readBytes(bytes);
         return bytes;
     }
@@ -804,7 +809,7 @@ public abstract class ByteBufUtils {
 
     public static Byte[] readByteBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var bytesBox = new Byte[CollectionUtils.comfortableLength(length)];
+        var bytesBox = new Byte[CollectionUtils.comfortableByteLength(length)];
         for (var i = 0; i < length; i++) {
             bytesBox[i] = readByteBox(byteBuf);
         }
@@ -862,7 +867,7 @@ public abstract class ByteBufUtils {
 
     public static short[] readShortArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var shorts = new short[CollectionUtils.comfortableLength(length)];
+        var shorts = new short[CollectionUtils.comfortableShortLength(length)];
         var readIndex = byteBuf.readerIndex();
         for (var i = 0; i < length; i++) {
             shorts[i] = byteBuf.getShort(readIndex);
@@ -885,7 +890,7 @@ public abstract class ByteBufUtils {
 
     public static Short[] readShortBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var shorts = new Short[CollectionUtils.comfortableLength(length)];
+        var shorts = new Short[CollectionUtils.comfortableShortLength(length)];
         for (var i = 0; i < length; i++) {
             shorts[i] = readShortBox(byteBuf);
         }
@@ -939,7 +944,7 @@ public abstract class ByteBufUtils {
 
     public static int[] readIntArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var ints = new int[CollectionUtils.comfortableLength(length)];
+        var ints = new int[CollectionUtils.comfortableIntLength(length)];
         for (var i = 0; i < length; i++) {
             ints[i] = readInt(byteBuf);
         }
@@ -959,7 +964,7 @@ public abstract class ByteBufUtils {
 
     public static Integer[] readIntBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var ints = new Integer[CollectionUtils.comfortableLength(length)];
+        var ints = new Integer[CollectionUtils.comfortableIntLength(length)];
         for (var i = 0; i < length; i++) {
             ints[i] = readIntBox(byteBuf);
         }
@@ -1013,7 +1018,7 @@ public abstract class ByteBufUtils {
 
     public static long[] readLongArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var longs = new long[CollectionUtils.comfortableLength(length)];
+        var longs = new long[CollectionUtils.comfortableLongLength(length)];
         for (var i = 0; i < length; i++) {
             longs[i] = readLong(byteBuf);
         }
@@ -1033,7 +1038,7 @@ public abstract class ByteBufUtils {
 
     public static Long[] readLongBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var longs = new Long[CollectionUtils.comfortableLength(length)];
+        var longs = new Long[CollectionUtils.comfortableLongLength(length)];
         for (var i = 0; i < length; i++) {
             longs[i] = readLongBox(byteBuf);
         }
@@ -1091,7 +1096,7 @@ public abstract class ByteBufUtils {
 
     public static float[] readFloatArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var floats = new float[CollectionUtils.comfortableLength(length)];
+        var floats = new float[CollectionUtils.comfortableIntLength(length)];
         var readIndex = byteBuf.readerIndex();
         for (var i = 0; i < length; i++) {
             floats[i] = byteBuf.getFloat(readIndex);
@@ -1114,7 +1119,7 @@ public abstract class ByteBufUtils {
 
     public static Float[] readFloatBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var floats = new Float[CollectionUtils.comfortableLength(length)];
+        var floats = new Float[CollectionUtils.comfortableIntLength(length)];
         for (var i = 0; i < length; i++) {
             floats[i] = readFloatBox(byteBuf);
         }
@@ -1172,7 +1177,7 @@ public abstract class ByteBufUtils {
 
     public static double[] readDoubleArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var doubles = new double[CollectionUtils.comfortableLength(length)];
+        var doubles = new double[CollectionUtils.comfortableLongLength(length)];
         var readIndex = byteBuf.readerIndex();
         for (var i = 0; i < length; i++) {
             doubles[i] = byteBuf.getDouble(readIndex);
@@ -1195,7 +1200,7 @@ public abstract class ByteBufUtils {
 
     public static Double[] readDoubleBoxArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var doubles = new Double[CollectionUtils.comfortableLength(length)];
+        var doubles = new Double[CollectionUtils.comfortableLongLength(length)];
         for (var i = 0; i < length; i++) {
             doubles[i] = readDoubleBox(byteBuf);
         }
@@ -1248,7 +1253,7 @@ public abstract class ByteBufUtils {
 
     public static String[] readStringArray(ByteBuf byteBuf) {
         var length = readInt(byteBuf);
-        var strings = new String[CollectionUtils.comfortableLength(length)];
+        var strings = new String[CollectionUtils.comfortableObjectLength(length)];
         for (var i = 0; i < length; i++) {
             strings[i] = readString(byteBuf);
         }
@@ -1292,49 +1297,7 @@ public abstract class ByteBufUtils {
         return set;
     }
 
-
-    //---------------------------------char--------------------------------------
-    public static void writeCharArray(ByteBuf byteBuf, char[] array) {
-        if (array == null) {
-            byteBuf.writeByte(0);
-            return;
-        }
-        writeInt(byteBuf, array.length);
-        for (var value : array) {
-            writeChar(byteBuf, value);
-        }
-    }
-
-    public static char[] readCharArray(ByteBuf byteBuf) {
-        var length = readInt(byteBuf);
-        var chars = new char[CollectionUtils.comfortableLength(length)];
-        for (var i = 0; i < length; i++) {
-            chars[i] = readChar(byteBuf);
-        }
-        return chars;
-    }
-
-    public static void writeCharBoxArray(ByteBuf byteBuf, Character[] array) {
-        if (array == null) {
-            byteBuf.writeByte(0);
-            return;
-        }
-        writeInt(byteBuf, array.length);
-        for (var value : array) {
-            writeCharBox(byteBuf, value);
-        }
-    }
-
-    public static Character[] readCharBoxArray(ByteBuf byteBuf) {
-        var length = readInt(byteBuf);
-        var chars = new Character[CollectionUtils.comfortableLength(length)];
-        for (var i = 0; i < length; i++) {
-            chars[i] = readCharBox(byteBuf);
-        }
-        return chars;
-    }
-
-    public static <T extends IPacket> void writePacketArray(ByteBuf byteBuf, T[] array, IProtocolRegistration protocolRegistration) {
+    public static <T> void writePacketArray(ByteBuf byteBuf, T[] array, IProtocolRegistration protocolRegistration) {
         if (array == null) {
             byteBuf.writeByte(0);
             return;

@@ -14,6 +14,7 @@
 package com.zfoo.protocol.serializer.javascript;
 
 import com.zfoo.protocol.generate.GenerateProtocolFile;
+import com.zfoo.protocol.model.Pair;
 import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.util.StringUtils;
 
@@ -23,9 +24,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class JsIntSerializer implements IJsSerializer {
+    @Override
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        return new Pair<>("number", "0");
+    }
+
     @Override
     public void writeObject(StringBuilder builder, String objectStr, int deep, Field field, IFieldRegistration fieldRegistration) {
         GenerateProtocolFile.addTab(builder, deep);
@@ -34,7 +39,7 @@ public class JsIntSerializer implements IJsSerializer {
 
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("const {} = buffer.readInt();", result)).append(LS);
         return result;

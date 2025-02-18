@@ -12,34 +12,40 @@
 
 package com.zfoo.net.config.model;
 
-import com.zfoo.protocol.registration.ProtocolModule;
+import com.zfoo.protocol.util.StringUtils;
 
 import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ProviderModule {
 
     /**
      * 模块id和模块名
      */
-    private ProtocolModule protocolModule;
+    private String protocolModule;
 
     /**
      * 提供者名字
      */
     private String provider;
 
-    public ProviderModule(ProtocolModule protocolModule, String provider) {
+
+    public ProviderModule() {
+    }
+
+    public ProviderModule(String protocolModule, String provider) {
         this.protocolModule = protocolModule;
         this.provider = provider;
     }
 
-    public ProviderModule(String protocolModule, String provider) {
-        this.protocolModule = new ProtocolModule((byte) 0, protocolModule);
-        this.provider = provider;
+    public String getProtocolModule() {
+        return protocolModule;
+    }
+
+    public void setProtocolModule(String protocolModule) {
+        this.protocolModule = protocolModule;
     }
 
     public String getProvider() {
@@ -48,14 +54,6 @@ public class ProviderModule {
 
     public void setProvider(String provider) {
         this.provider = provider;
-    }
-
-    public ProtocolModule getProtocolModule() {
-        return protocolModule;
-    }
-
-    public void setProtocolModule(ProtocolModule protocolModule) {
-        this.protocolModule = protocolModule;
     }
 
     @Override
@@ -73,5 +71,10 @@ public class ProviderModule {
     @Override
     public int hashCode() {
         return Objects.hash(protocolModule, provider);
+    }
+
+    @Override
+    public String toString() {
+        return StringUtils.format("[{}-{}]", protocolModule, provider);
     }
 }

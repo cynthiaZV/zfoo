@@ -28,14 +28,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 
 /**
  * 反射工具类
  *
  * @author godotg
- * @version 3.0
  */
 public abstract class ReflectionUtils {
 
@@ -77,7 +75,7 @@ public abstract class ReflectionUtils {
     }
 
     public static boolean isPojoClass(Class<?> clazz) {
-        return clazz.getSuperclass().equals(Object.class);
+        return clazz.getSuperclass().equals(Object.class) || clazz.isRecord();
     }
 
     public static void assertIsPojoClass(Class<?> clazz) {
@@ -175,6 +173,14 @@ public abstract class ReflectionUtils {
         return ArrayUtils.listToArray(list, Method.class);
     }
 
+    public static Method getMethodByNameInPOJOClass(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        try {
+            return clazz.getDeclaredMethod(methodName, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(StringUtils.format("[class:{}] has no [method:{}] exception", clazz, methodName), e);
+        }
+    }
+
 
     /**
      * Attempt to get all Methods on the supplied class.
@@ -200,7 +206,7 @@ public abstract class ReflectionUtils {
         try {
             return newInstance(clazz.getDeclaredConstructor());
         } catch (NoSuchMethodException e) {
-            throw new RunException("[{}]无法被实例化", clazz);
+            throw new RunException("[{}] cannot be instantiated", clazz);
         }
     }
 
@@ -208,7 +214,15 @@ public abstract class ReflectionUtils {
         try {
             return constructor.newInstance();
         } catch (Exception e) {
-            throw new RunException("[{}]无法被实例化", constructor);
+            throw new RunException("[{}] cannot be instantiated", constructor);
+        }
+    }
+
+    public static <T> T newInstance(Constructor<T> constructor, Object... initargs) {
+        try {
+            return constructor.newInstance(initargs);
+        } catch (Exception e) {
+            throw new RunException("[{}] cannot be instantiated", constructor);
         }
     }
 
@@ -319,59 +333,22 @@ public abstract class ReflectionUtils {
                 .filter(it -> !Modifier.isStatic(it.getModifiers()))
                 .filter(it -> !Modifier.isTransient(it.getModifiers()))
                 .filter(it -> !it.isAnnotationPresent(Transient.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public static String fieldToGetMethod(Class<?> clazz, Field field) {
-        var fieldName = field.getName();
-
-        assertIsStandardFieldName(field);
-
-        var methodName = "get" + StringUtils.capitalize(fieldName);
-
+    public static <T> Constructor<T> getConstructor(Class<T> clazz) {
         try {
-            clazz.getDeclaredMethod(methodName, null);
-            return methodName;
+            return clazz.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
-            // java的get方法对boolean值有可能对应get或者is，所以尝试获取两种不同的get方法，当两种都获取不到才抛异常
-        }
-
-        // 如果属性名的第一个字母是小写且第二个字母大写，那么该属性名直接用作 getter/setter。例如属性名为uName，对应的方法是getuName/setuName。
-        // 如果属性名以大写字母开头，属性名直接用作 getter/setter 方法中 get/set 的后部分。例如属性名为Name，对应的方法是getName/setName。
-        methodName = "get" + fieldName;
-        try {
-            clazz.getDeclaredMethod(methodName, null);
-            return methodName;
-        } catch (NoSuchMethodException e) {
-        }
-
-        methodName = "is" + StringUtils.capitalize(fieldName);
-        try {
-            clazz.getDeclaredMethod(methodName, null);
-            return methodName;
-        } catch (NoSuchMethodException e) {
-            throw new RunException("field:[{}] has no getMethod or isMethod in class:[{}]", field.getName(), clazz.getCanonicalName());
+            throw new RunException("default constructor:[{}] not exists in class:[{}]", clazz.getCanonicalName());
         }
     }
 
-    public static String fieldToSetMethod(Class<?> clazz, Field field) {
-        var fieldName = field.getName();
-
-        assertIsStandardFieldName(field);
-
-        var methodName = "set" + StringUtils.capitalize(fieldName);
+    public static <T> Constructor<T> getConstructor(Class<T> clazz, Class[] params) {
         try {
-            clazz.getDeclaredMethod(methodName, field.getType());
-            return methodName;
+            return clazz.getConstructor(params);
         } catch (NoSuchMethodException e) {
-        }
-
-        methodName = "set" + fieldName;
-        try {
-            clazz.getDeclaredMethod(methodName, field.getType());
-            return methodName;
-        } catch (NoSuchMethodException e) {
-            throw new RunException("field:[{}] has no setMethod in class:[{}]", field.getName(), clazz.getCanonicalName());
+            throw new RunException("constructor:[{}] has no setMethod in class:[{}]", params.length, clazz.getCanonicalName());
         }
     }
 

@@ -24,13 +24,12 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class CppLongSerializer implements ICppSerializer {
 
     @Override
-    public Pair<String, String> field(Field field, IFieldRegistration fieldRegistration) {
-        return new Pair<>("int64_t", field.getName());
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        return new Pair<>("int64_t", "0");
     }
 
     @Override
@@ -41,7 +40,7 @@ public class CppLongSerializer implements ICppSerializer {
 
     @Override
     public String readObject(StringBuilder builder, int deep, Field field, IFieldRegistration fieldRegistration) {
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        String result = "result" + GenerateProtocolFile.localVariableId++;
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("auto {} = buffer.readLong();", result)).append(LS);

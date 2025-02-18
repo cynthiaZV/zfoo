@@ -14,6 +14,7 @@ package com.zfoo.protocol;
 
 import com.zfoo.protocol.buffer.ByteBufUtils;
 import com.zfoo.protocol.collection.HashMapIntShort;
+import com.zfoo.protocol.exception.DecodeException;
 import com.zfoo.protocol.generate.GenerateOperation;
 import com.zfoo.protocol.registration.IProtocolRegistration;
 import com.zfoo.protocol.registration.ProtocolAnalysis;
@@ -26,12 +27,9 @@ import java.util.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ProtocolManager {
 
-    public static final String PROTOCOL_ID = "PROTOCOL_ID";
-    public static final String PROTOCOL_METHOD = "protocolId";
     public static final short MAX_PROTOCOL_NUM = Short.MAX_VALUE;
     public static final byte MAX_MODULE_NUM = Byte.MAX_VALUE;
 
@@ -58,8 +56,8 @@ public class ProtocolManager {
     /**
      * serialize the packet into the buffer
      */
-    public static void write(ByteBuf buffer, IPacket packet) {
-        var protocolId = packet.protocolId();
+    public static void write(ByteBuf buffer, Object packet) {
+        var protocolId = protocolId(packet.getClass());
         // write the protocolId
         ByteBufUtils.writeShort(buffer, protocolId);
         // write the package
@@ -68,17 +66,34 @@ public class ProtocolManager {
 
     /**
      * deserialization a packet from the buffer
+     * <p>
+     * byte[] convert to ByteBuf using Unpooled.wrappedBuffer(byte[]) in netty
+     * ByteBuf convert to byte[] using ByteBufUtils.readAllBytes(ByteBuf) in zfoo
      */
-    public static IPacket read(ByteBuf buffer) {
-        return (IPacket) protocols[ByteBufUtils.readShort(buffer)].read(buffer);
+    public static Object read(ByteBuf buffer) {
+        short protocolId = -1;
+        try {
+            protocolId = ByteBufUtils.readShort(buffer);
+            return protocols[protocolId].read(buffer);
+        } catch (Throwable e) {
+            throw new DecodeException(e, protocolId);
+        }
     }
 
     public static IProtocolRegistration getProtocol(short protocolId) {
         return protocols[protocolId];
     }
 
+    public static IProtocolRegistration getProtocol(Class<?> protocolClass) {
+        return getProtocol(protocolId(protocolClass));
+    }
+
     public static ProtocolModule moduleByProtocolId(short id) {
         return modules[protocols[id].module()];
+    }
+
+    public static ProtocolModule moduleByProtocol(Class<?> clazz) {
+        return moduleByProtocolId(protocolId(clazz));
     }
 
     /**
@@ -98,14 +113,15 @@ public class ProtocolManager {
                 .filter(Objects::nonNull)
                 .filter(it -> it.getName().equals(name))
                 .findFirst();
-        if (moduleOptional.isEmpty()) {
-            return null;
-        }
-        return moduleOptional.get();
+        return moduleOptional.orElse(null);
     }
 
     public static short protocolId(Class<?> clazz) {
         return protocolIdMap == null ? protocolIdPrimitiveMap.getPrimitive(clazz.hashCode()) : protocolIdMap.get(clazz);
+    }
+
+    public static boolean isProtocolClass(Class<?> clazz) {
+        return protocolIdMap == null ? protocolIdPrimitiveMap.containsKey(clazz.hashCode()) : protocolIdMap.containsKey(clazz);
     }
 
     public static void initProtocol(Set<Class<?>> protocolClassSet) {
@@ -130,8 +146,8 @@ public class ProtocolManager {
      * EN:Register protocol and automatically generates a protocol ID if the subprotocol does not specify a protocol ID
      * CN:子协议会自动注册协议号protocolId，如果子协议没有指定protocolId则自动生成protocolId
      */
-    public static void initProtocolAuto(Set<Class<?>> protocolClassSet, GenerateOperation generateOperation) {
-        ProtocolAnalysis.analyzeAuto(protocolClassSet, generateOperation);
+    public static void initProtocolAuto(List<Class<?>> protocolClassList, GenerateOperation generateOperation) {
+        ProtocolAnalysis.analyzeAuto(protocolClassList, generateOperation);
     }
 
 }

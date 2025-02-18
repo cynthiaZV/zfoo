@@ -24,7 +24,6 @@ import java.util.Map;
  * deemed invalid, an {@link IllegalArgumentException} is thrown (typically).
  *
  * @author godotg
- * @version 3.0
  */
 public abstract class AssertionUtils {
 
@@ -91,7 +90,7 @@ public abstract class AssertionUtils {
     }
 
     public static void le0(long x) {
-        le(x, 1);
+        le(x, 0);
     }
 
     public static void le1(long x) {

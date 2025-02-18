@@ -1,31 +1,39 @@
-// @author godotg
-// @version 3.0
-const SimpleObject = function(c, g) {
-    this.c = c; // int
-    this.g = g; // boolean
+
+const SimpleObject = function() {
+    this.c = 0; // number
+    this.g = false; // boolean
 };
 
+SimpleObject.PROTOCOL_ID = 104;
+
 SimpleObject.prototype.protocolId = function() {
-    return 104;
+    return SimpleObject.PROTOCOL_ID;
 };
 
 SimpleObject.write = function(buffer, packet) {
-    if (buffer.writePacketFlag(packet)) {
+    if (packet === null) {
+        buffer.writeInt(0);
         return;
     }
+    buffer.writeInt(-1);
     buffer.writeInt(packet.c);
-    buffer.writeBoolean(packet.g);
+    buffer.writeBool(packet.g);
 };
 
 SimpleObject.read = function(buffer) {
-    if (!buffer.readBoolean()) {
+    const length = buffer.readInt();
+    if (length === 0) {
         return null;
     }
+    const beforeReadIndex = buffer.getReadOffset();
     const packet = new SimpleObject();
     const result0 = buffer.readInt();
     packet.c = result0;
-    const result1 = buffer.readBoolean(); 
+    const result1 = buffer.readBool(); 
     packet.g = result1;
+    if (length > 0) {
+        buffer.setReadOffset(beforeReadIndex + length);
+    }
     return packet;
 };
 

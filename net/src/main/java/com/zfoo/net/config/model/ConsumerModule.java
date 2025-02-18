@@ -18,11 +18,8 @@ import java.util.Objects;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class ConsumerModule {
-
-    private ProtocolModule protocolModule;
 
     // 负载均衡方式
     private String loadBalancer;
@@ -30,20 +27,12 @@ public class ConsumerModule {
     // 消费哪个provider
     private String consumer;
 
-    public ConsumerModule(ProtocolModule protocolModule, String loadBalancer, String consumer) {
-        this.protocolModule = protocolModule;
-        this.consumer = consumer;
-        this.loadBalancer = loadBalancer;
+    public ConsumerModule() {
     }
 
-    public ConsumerModule(String protocolModule, String loadBalancer, String consumer) {
-        this.protocolModule = new ProtocolModule((byte) 0, protocolModule);
+    public ConsumerModule(String loadBalancer, String consumer) {
         this.consumer = consumer;
         this.loadBalancer = loadBalancer;
-    }
-    
-    public boolean matchProvider(ProviderModule providerModule) {
-        return Objects.equals(protocolModule.getName(), providerModule.getProtocolModule().getName()) && Objects.equals(consumer, providerModule.getProvider());
     }
 
     public String getConsumer() {
@@ -62,14 +51,6 @@ public class ConsumerModule {
         this.loadBalancer = loadBalancer;
     }
 
-    public ProtocolModule getProtocolModule() {
-        return protocolModule;
-    }
-
-    public void setProtocolModule(ProtocolModule protocolModule) {
-        this.protocolModule = protocolModule;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -79,11 +60,11 @@ public class ConsumerModule {
             return false;
         }
         ConsumerModule that = (ConsumerModule) o;
-        return Objects.equals(protocolModule, that.protocolModule) && Objects.equals(consumer, that.consumer);
+        return Objects.equals(consumer, that.consumer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(protocolModule, loadBalancer, consumer);
+        return Objects.hash(loadBalancer, consumer);
     }
 }

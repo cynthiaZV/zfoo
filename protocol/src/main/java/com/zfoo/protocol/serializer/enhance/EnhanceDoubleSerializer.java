@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class EnhanceDoubleSerializer implements IEnhanceSerializer {
 
@@ -37,11 +36,22 @@ public class EnhanceDoubleSerializer implements IEnhanceSerializer {
 
     @Override
     public String readObject(StringBuilder builder, Field field, IFieldRegistration fieldRegistration) {
-        var result = "result" + GenerateProtocolFile.index.getAndIncrement();
+        var result = "result" + GenerateProtocolFile.localVariableId++;
         if (isPrimitiveField(field)) {
             builder.append(StringUtils.format("double {} = {}.readDouble($1);", result, EnhanceUtils.byteBufUtils));
         } else {
             builder.append(StringUtils.format("Double {} = {}.readDoubleBox($1);", result, EnhanceUtils.byteBufUtils));
+        }
+        return result;
+    }
+
+    @Override
+    public String defaultValue(StringBuilder builder, Field field, IFieldRegistration fieldRegistration) {
+        var result = "result" + GenerateProtocolFile.localVariableId++;
+        if (isPrimitiveField(field)) {
+            builder.append(StringUtils.format("double {} = 0D;", result));
+        } else {
+            builder.append(StringUtils.format("Double {} = {}.ZERO_DOUBLE;", result, EnhanceUtils.byteBufUtils));
         }
         return result;
     }

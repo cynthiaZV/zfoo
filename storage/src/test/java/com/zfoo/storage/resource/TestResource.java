@@ -13,16 +13,15 @@
 
 package com.zfoo.storage.resource;
 
-import com.zfoo.storage.model.anno.Id;
-import com.zfoo.storage.model.anno.Resource;
+import com.zfoo.storage.anno.Id;
+import com.zfoo.storage.anno.Storage;
 
 import java.util.Map;
 
 /**
  * @author godotg
- * @version 4.0
  */
-@Resource
+@Storage
 public class TestResource {
 
 	@Id

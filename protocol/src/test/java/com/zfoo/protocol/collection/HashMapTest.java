@@ -19,7 +19,6 @@ import java.util.*;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class HashMapTest {
 
@@ -38,8 +37,7 @@ public class HashMapTest {
         map.put(1, 1);
         map.put(2, 2);
         map.put(3, 3);
-        System.out.println(map.size());
-        System.out.println(map);
+        Assert.assertEquals(map.size(), 4);
     }
 
     private void assertKey(HashMapIntInt primitiveMap, HashMap<Integer, Integer> javaMap, int key) {
@@ -314,7 +312,7 @@ public class HashMapTest {
         int dummy1 = 0, dummy2 = 0;
         for (int i = 0; i < 1000; i++) {
             var it = map.entrySet().iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 var next = it.next();
                 dummy1 ^= next.getKey();
                 dummy2 ^= next.getValue();
@@ -324,4 +322,188 @@ public class HashMapTest {
         Assert.assertEquals(dummy2, 0);
     }
 
+    @Test
+    public void intIntEqualsTest() {
+        var map = Map.of(1, 2, 3, 4, 5, 6, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        var myMap = new HashMapIntInt();
+        myMap.putAll(map);
+        Assert.assertEquals(map, myMap);
+        Assert.assertFalse(myMap.isEmpty());
+        for (var entry : map.entrySet()) {
+            Assert.assertTrue(myMap.containsKey(entry.getKey()));
+            Assert.assertTrue(myMap.containsValue(entry.getValue()));
+            Assert.assertNotNull(myMap.get(entry.getKey()));
+        }
+        myMap.clear();
+        Assert.assertTrue(myMap.isEmpty());
+        for (int i = 1; i <= 1000; i++) {
+            for (var entry : map.entrySet()) {
+                myMap.put(entry.getKey() * i, entry.getValue() * i);
+            }
+        }
+        var newMap = new HashMap<>(myMap);
+        for (var key : myMap.keySet()) {
+            Assert.assertTrue(newMap.containsKey(key));
+        }
+        for (var value : myMap.values()) {
+            Assert.assertTrue(newMap.containsValue(value));
+        }
+        for (var entry : myMap.entrySet()) {
+            Assert.assertTrue(newMap.containsKey(entry.getKey()));
+            Assert.assertTrue(newMap.containsValue(entry.getValue()));
+        }
+        Assert.assertEquals(myMap, newMap);
+        for (var key : newMap.keySet()) {
+            myMap.remove(key);
+        }
+        Assert.assertTrue(myMap.isEmpty());
+    }
+
+    @Test
+    public void intLongEqualsTest() {
+        var map = Map.of(1, 2L, 3, 4L, 5, 6L, Integer.MAX_VALUE, Long.MIN_VALUE, Integer.MIN_VALUE, Long.MAX_VALUE);
+        var myMap = new HashMapIntLong();
+        myMap.putAll(map);
+        Assert.assertEquals(map, myMap);
+        Assert.assertFalse(myMap.isEmpty());
+        for (var entry : map.entrySet()) {
+            Assert.assertTrue(myMap.containsKey(entry.getKey()));
+            Assert.assertTrue(myMap.containsValue(entry.getValue()));
+            Assert.assertNotNull(myMap.get(entry.getKey()));
+        }
+        myMap.clear();
+        Assert.assertTrue(myMap.isEmpty());
+        for (int i = 1; i <= 1000; i++) {
+            for (var entry : map.entrySet()) {
+                myMap.put(entry.getKey() * i, entry.getValue() * i);
+            }
+        }
+        var newMap = new HashMap<>(myMap);
+        for (var key : myMap.keySet()) {
+            Assert.assertTrue(newMap.containsKey(key));
+        }
+        for (var value : myMap.values()) {
+            Assert.assertTrue(newMap.containsValue(value));
+        }
+        for (var entry : myMap.entrySet()) {
+            Assert.assertTrue(newMap.containsKey(entry.getKey()));
+            Assert.assertTrue(newMap.containsValue(entry.getValue()));
+        }
+        Assert.assertEquals(myMap, newMap);
+        for (var key : newMap.keySet()) {
+            myMap.remove(key);
+        }
+        Assert.assertTrue(myMap.isEmpty());
+    }
+
+    @Test
+    public void intShortEqualsTest() {
+        var map = Map.of(1, (short) 2, 3, (short) 4, 5, (short) 6, Integer.MAX_VALUE, Short.MIN_VALUE, Integer.MIN_VALUE, Short.MAX_VALUE);
+        var myMap = new HashMapIntShort();
+        myMap.putAll(map);
+        Assert.assertEquals(map, myMap);
+        Assert.assertFalse(myMap.isEmpty());
+        for (var entry : map.entrySet()) {
+            Assert.assertTrue(myMap.containsKey(entry.getKey()));
+            Assert.assertTrue(myMap.containsValue(entry.getValue()));
+            Assert.assertNotNull(myMap.get(entry.getKey()));
+        }
+        myMap.clear();
+        Assert.assertTrue(myMap.isEmpty());
+        for (int i = 1; i <= 1000; i++) {
+            for (var entry : map.entrySet()) {
+                myMap.put(entry.getKey() * i, (short) (entry.getValue() * i));
+            }
+        }
+        var newMap = new HashMap<>(myMap);
+        for (var key : myMap.keySet()) {
+            Assert.assertTrue(newMap.containsKey(key));
+        }
+        for (var value : myMap.values()) {
+            Assert.assertTrue(newMap.containsValue(value));
+        }
+        for (var entry : myMap.entrySet()) {
+            Assert.assertTrue(newMap.containsKey(entry.getKey()));
+            Assert.assertTrue(newMap.containsValue(entry.getValue()));
+        }
+        Assert.assertEquals(myMap, newMap);
+        for (var key : newMap.keySet()) {
+            myMap.remove(key);
+        }
+        Assert.assertTrue(myMap.isEmpty());
+    }
+
+    @Test
+    public void longIntEqualsTest() {
+        var map = Map.of(1L, 2, 3L, 4, 5L, 6, Long.MAX_VALUE, Integer.MIN_VALUE, Long.MIN_VALUE, Integer.MAX_VALUE);
+        var myMap = new HashMapLongInt();
+        myMap.putAll(map);
+        Assert.assertEquals(map, myMap);
+        Assert.assertFalse(myMap.isEmpty());
+        for (var entry : map.entrySet()) {
+            Assert.assertTrue(myMap.containsKey(entry.getKey()));
+            Assert.assertTrue(myMap.containsValue(entry.getValue()));
+            Assert.assertNotNull(myMap.get(entry.getKey()));
+        }
+        myMap.clear();
+        Assert.assertTrue(myMap.isEmpty());
+        for (int i = 1; i <= 1000; i++) {
+            for (var entry : map.entrySet()) {
+                myMap.put(entry.getKey() * i, entry.getValue() * i);
+            }
+        }
+        var newMap = new HashMap<>(myMap);
+        for (var key : myMap.keySet()) {
+            Assert.assertTrue(newMap.containsKey(key));
+        }
+        for (var value : myMap.values()) {
+            Assert.assertTrue(newMap.containsValue(value));
+        }
+        for (var entry : myMap.entrySet()) {
+            Assert.assertTrue(newMap.containsKey(entry.getKey()));
+            Assert.assertTrue(newMap.containsValue(entry.getValue()));
+        }
+        Assert.assertEquals(myMap, newMap);
+        for (var key : newMap.keySet()) {
+            myMap.remove(key);
+        }
+        Assert.assertTrue(myMap.isEmpty());
+    }
+
+    @Test
+    public void longLongEqualsTest() {
+        var map = Map.of(1L, 2L, 3L, 4L, 5L, 6L, Long.MAX_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MAX_VALUE);
+        var myMap = new HashMapLongLong();
+        myMap.putAll(map);
+        Assert.assertEquals(map, myMap);
+        Assert.assertFalse(myMap.isEmpty());
+        for (var entry : map.entrySet()) {
+            Assert.assertTrue(myMap.containsKey(entry.getKey()));
+            Assert.assertTrue(myMap.containsValue(entry.getValue()));
+            Assert.assertNotNull(myMap.get(entry.getKey()));
+        }
+        myMap.clear();
+        Assert.assertTrue(myMap.isEmpty());
+        for (int i = 1; i <= 1000; i++) {
+            for (var entry : map.entrySet()) {
+                myMap.put(entry.getKey() * i, entry.getValue() * i);
+            }
+        }
+        var newMap = new HashMap<>(myMap);
+        for (var key : myMap.keySet()) {
+            Assert.assertTrue(newMap.containsKey(key));
+        }
+        for (var value : myMap.values()) {
+            Assert.assertTrue(newMap.containsValue(value));
+        }
+        for (var entry : myMap.entrySet()) {
+            Assert.assertTrue(newMap.containsKey(entry.getKey()));
+            Assert.assertTrue(newMap.containsValue(entry.getValue()));
+        }
+        Assert.assertEquals(myMap, newMap);
+        for (var key : newMap.keySet()) {
+            myMap.remove(key);
+        }
+        Assert.assertTrue(myMap.isEmpty());
+    }
 }

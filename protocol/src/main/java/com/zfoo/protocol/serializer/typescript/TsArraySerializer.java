@@ -14,7 +14,7 @@
 package com.zfoo.protocol.serializer.typescript;
 
 import com.zfoo.protocol.generate.GenerateProtocolFile;
-import com.zfoo.protocol.model.Triple;
+import com.zfoo.protocol.model.Pair;
 import com.zfoo.protocol.registration.field.ArrayField;
 import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.serializer.CodeLanguage;
@@ -27,14 +27,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class TsArraySerializer implements ITsSerializer {
 
     @Override
-    public Triple<String, String, String> field(Field field, IFieldRegistration fieldRegistration) {
-        var type = StringUtils.format(": Array<{}> | null", GenerateTsUtils.toTsClassName(field.getType().getComponentType().getSimpleName()));
-        return new Triple<>(type, field.getName(), "null");
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        var type = StringUtils.format("Array<{}>", CodeGenerateTypeScript.toTsClassName(field.getType().getComponentType().getSimpleName()));
+        return new Pair<>(type, "[]");
     }
 
     @Override
@@ -55,10 +54,10 @@ public class TsArraySerializer implements ITsSerializer {
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("buffer.writeInt({}.length);", objectStr)).append(LS);
 
-        String element = "element" + GenerateProtocolFile.index.getAndIncrement();
+        String element = "element" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("{}.forEach({} => {", objectStr, element)).append(LS);
-        GenerateTsUtils.tsSerializer(arrayField.getArrayElementRegistration().serializer())
+        CodeGenerateTypeScript.tsSerializer(arrayField.getArrayElementRegistration().serializer())
                 .writeObject(builder, element, deep + 2, field, arrayField.getArrayElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append("});").append(LS);
@@ -75,12 +74,12 @@ public class TsArraySerializer implements ITsSerializer {
         }
 
         ArrayField arrayField = (ArrayField) fieldRegistration;
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
-        var typeName =  StringUtils.format("Array<{}>", GenerateTsUtils.toTsClassName(arrayField.getType().getSimpleName()));
+        String result = "result" + GenerateProtocolFile.localVariableId++;
+        var typeName = StringUtils.format("Array<{}>", CodeGenerateTypeScript.toTsClassName(arrayField.getType().getSimpleName()));
         builder.append(StringUtils.format("const {} = new {};", result, typeName)).append(LS);
 
-        String i = "index" + GenerateProtocolFile.index.getAndIncrement();
-        String size = "size" + GenerateProtocolFile.index.getAndIncrement();
+        String i = "index" + GenerateProtocolFile.localVariableId++;
+        String size = "size" + GenerateProtocolFile.localVariableId++;
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("const {} = buffer.readInt();", size)).append(LS);
@@ -89,7 +88,7 @@ public class TsArraySerializer implements ITsSerializer {
         builder.append(StringUtils.format("if ({} > 0) {", size)).append(LS);
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("for (let {} = 0; {} < {}; {}++) {", i, i, size, i)).append(LS);
-        String readObject = GenerateTsUtils.tsSerializer(arrayField.getArrayElementRegistration().serializer())
+        String readObject = CodeGenerateTypeScript.tsSerializer(arrayField.getArrayElementRegistration().serializer())
                 .readObject(builder, deep + 2, field, arrayField.getArrayElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 2);
         builder.append(StringUtils.format("{}.push({});", result, readObject)).append(LS);

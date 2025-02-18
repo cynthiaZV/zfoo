@@ -17,7 +17,6 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
  * @author godotg
- * @version 4.0
  */
 public class NamespaceHandler extends NamespaceHandlerSupport {
 

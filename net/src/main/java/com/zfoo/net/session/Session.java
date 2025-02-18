@@ -12,7 +12,7 @@
 
 package com.zfoo.net.session;
 
-import com.zfoo.net.consumer.registry.RegisterVO;
+import com.zfoo.net.consumer.registry.Register;
 import com.zfoo.protocol.util.StringUtils;
 import io.netty.channel.Channel;
 
@@ -21,19 +21,20 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class Session implements Closeable {
 
     private static final AtomicLong ATOMIC_LONG = new AtomicLong(0);
 
     /**
-     * The globally unique ID of the session
+     * The globally unique ID of the session and the negative sid are allowed
      */
-    private long sid;
+    private long sid = ATOMIC_LONG.incrementAndGet();
 
     private Channel channel;
 
+    // ------------------------------------------------------------------------------------------------------------
+    // The following are extra parameters, add them yourself if necessary（下面都是额外参数，有需要的自己添加）
     /**
      * EN:The default user ID is an ID greater than 0, or equal 0 if there is no login, user extra parameters
      * CN:默认用户的id都是大于0的id，如果没有登录则等于0，用户额外参数
@@ -44,13 +45,12 @@ public class Session implements Closeable {
      * EN:Session extra parameters
      * CN:Session附带的属性参数，消费者的属性
      */
-    private RegisterVO consumerAttribute = null;
+    private Register consumerRegister = null;
 
     public Session(Channel channel) {
         if (channel == null) {
             throw new IllegalArgumentException("channel cannot be empty");
         }
-        this.sid = ATOMIC_LONG.getAndIncrement();
         this.channel = channel;
     }
 
@@ -86,10 +86,6 @@ public class Session implements Closeable {
         return sid;
     }
 
-    public void setSid(long sid) {
-        this.sid = sid;
-    }
-
     public Channel getChannel() {
         return channel;
     }
@@ -102,11 +98,11 @@ public class Session implements Closeable {
         this.uid = uid;
     }
 
-    public RegisterVO getConsumerAttribute() {
-        return consumerAttribute;
+    public Register getConsumerRegister() {
+        return consumerRegister;
     }
 
-    public void setConsumerAttribute(RegisterVO consumerAttribute) {
-        this.consumerAttribute = consumerAttribute;
+    public void setConsumerRegister(Register consumerRegister) {
+        this.consumerRegister = consumerRegister;
     }
 }

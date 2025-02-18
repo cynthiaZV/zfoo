@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 
-#include "cppProtocol/ProtocolManager.h"
+#include "zfoocpp/ProtocolManager.h"
 
 
 namespace serialization_test {
@@ -21,7 +21,7 @@ namespace serialization_test {
         write(buffer, &objectB);
 
         ObjectB obj = *((ObjectB *) read(buffer));
-        cout << "Hello, World!" << endl;
+        cout << "objectBTest" << endl;
     }
 
     void objectATest() {
@@ -43,7 +43,7 @@ namespace serialization_test {
         write(buffer, &objectA);
 
         ObjectA obj = *((ObjectA *) read(buffer));
-        cout << "Hello, World!" << endl;
+        cout << "objectATest" << endl;
     }
 
 
@@ -69,13 +69,17 @@ namespace serialization_test {
 
         write(buffer, &normalObject);
         NormalObject *p = (NormalObject *) read(buffer);
-        cout << "Hello, World!" << endl;
+        cout << "normalObjectTest" << endl;
     }
 
 
-    void complexObjectTest() {
+    void compatibleTest() {
         // 读取二进制文件
-        ifstream file("../../resources/ComplexObject.bytes", ios::out | ios::binary);
+//        ifstream file("D:\\Project\\zfoo\\protocol\\src\\test\\resources\\compatible\\normal-no-compatible.bytes", ios::out | ios::binary);
+//        ifstream file("D:\\Project\\zfoo\\protocol\\src\\test\\resources\\compatible\\normal-out-compatible.bytes", ios::out | ios::binary);
+//        ifstream file("D:\\Project\\zfoo\\protocol\\src\\test\\resources\\compatible\\normal-inner-compatible.bytes", ios::out | ios::binary);
+        ifstream file("D:\\Project\\zfoo\\protocol\\src\\test\\resources\\compatible\\normal-out-inner-compatible.bytes", ios::out | ios::binary);
+//        ifstream file("D:\\Project\\zfoo\\protocol\\src\\test\\resources\\compatible\\normal-out-inner-inner-compatible.bytes", ios::out | ios::binary);
         unsigned char carray[10000];
         int length = 0;
         while (file.read((char *) &carray[length], sizeof(unsigned char))) {
@@ -85,35 +89,21 @@ namespace serialization_test {
 
         ByteBuffer buffer;
         buffer.writeBytes(reinterpret_cast<const int8_t *>(carray), length);
-        ComplexObject obj = *((ComplexObject *) read(buffer));
+        NormalObject obj = *((NormalObject *) read(buffer));
 
         ByteBuffer newBuffer;
         write(newBuffer, &obj);
-        obj = *((ComplexObject *) read(newBuffer));
-        cout << "Hello, World!" << endl;
+        obj = *((NormalObject *) read(newBuffer));
 
-        for (int i = 0; i < 3000; ++i) {
-            auto a = buffer.getByte(i);
-            auto b = newBuffer.getByte(i);
-            if (a != b) {
-                cout << i << endl;
-            }
-        }
+        cout << "source size " << length << endl;
+        cout << "target size " << newBuffer.getWriteOffset() << endl;
+        cout << "compatible test" << endl;
     }
 
 
     void protocol_all_test() {
-        try {
-            initProtocol();
-            objectBTest();
-            objectATest();
-            normalObjectTest();
-            complexObjectTest();
-        } catch (string &e) {
-            cout << e << endl;
-        } catch (...) {
-            cout << "unknown" << endl;
-        }
+        initProtocol();
+        compatibleTest();
     }
 
 }

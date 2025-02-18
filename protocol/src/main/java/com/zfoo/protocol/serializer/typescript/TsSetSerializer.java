@@ -14,7 +14,7 @@
 package com.zfoo.protocol.serializer.typescript;
 
 import com.zfoo.protocol.generate.GenerateProtocolFile;
-import com.zfoo.protocol.model.Triple;
+import com.zfoo.protocol.model.Pair;
 import com.zfoo.protocol.registration.field.IFieldRegistration;
 import com.zfoo.protocol.registration.field.SetField;
 import com.zfoo.protocol.serializer.CodeLanguage;
@@ -27,14 +27,13 @@ import static com.zfoo.protocol.util.FileUtils.LS;
 
 /**
  * @author godotg
- * @version 3.0
  */
 public class TsSetSerializer implements ITsSerializer {
 
     @Override
-    public Triple<String, String, String> field(Field field, IFieldRegistration fieldRegistration) {
-        var type = StringUtils.format(": {} | null", GenerateTsUtils.toTsClassName(field.getGenericType().toString()));
-        return new Triple<>(type, field.getName(), "null");
+    public Pair<String, String> fieldTypeDefaultValue(Field field, IFieldRegistration fieldRegistration) {
+        var type = StringUtils.format("{}", CodeGenerateTypeScript.toTsClassName(field.getGenericType().toString()));
+        return new Pair<>(type, "new Set()");
     }
 
     @Override
@@ -56,10 +55,10 @@ public class TsSetSerializer implements ITsSerializer {
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("buffer.writeInt({}.size);", objectStr)).append(LS);
 
-        String element = "element" + GenerateProtocolFile.index.getAndIncrement();
+        String element = "element" + GenerateProtocolFile.localVariableId++;
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append(StringUtils.format("{}.forEach({} => {", objectStr, element)).append(LS);
-        GenerateTsUtils.tsSerializer(setField.getSetElementRegistration().serializer())
+        CodeGenerateTypeScript.tsSerializer(setField.getSetElementRegistration().serializer())
                 .writeObject(builder, element, deep + 2, field, setField.getSetElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 1);
         builder.append("});").append(LS);
@@ -76,21 +75,21 @@ public class TsSetSerializer implements ITsSerializer {
         }
 
         SetField setField = (SetField) fieldRegistration;
-        String result = "result" + GenerateProtocolFile.index.getAndIncrement();
-        var typeName = GenerateTsUtils.toTsClassName(setField.getType().toString());
+        String result = "result" + GenerateProtocolFile.localVariableId++;
+        var typeName = CodeGenerateTypeScript.toTsClassName(setField.getType().toString());
         builder.append(StringUtils.format("const {} = new {}();", result, typeName)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
-        String size = "size" + GenerateProtocolFile.index.getAndIncrement();
+        String size = "size" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("const {} = buffer.readInt();", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep);
         builder.append(StringUtils.format("if ({} > 0) {", size)).append(LS);
 
         GenerateProtocolFile.addTab(builder, deep + 1);
-        String i = "index" + GenerateProtocolFile.index.getAndIncrement();
+        String i = "index" + GenerateProtocolFile.localVariableId++;
         builder.append(StringUtils.format("for (let {} = 0; {} < {}; {}++) {", i, i, size, i)).append(LS);
-        String readObject = GenerateTsUtils.tsSerializer(setField.getSetElementRegistration().serializer())
+        String readObject = CodeGenerateTypeScript.tsSerializer(setField.getSetElementRegistration().serializer())
                 .readObject(builder, deep + 2, field, setField.getSetElementRegistration());
         GenerateProtocolFile.addTab(builder, deep + 2);
         builder.append(StringUtils.format("{}.add({});", result, readObject)).append(LS);
